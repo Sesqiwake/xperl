@@ -1,0 +1,25 @@
+## Interface: 30300
+## Title: X-Perl UnitFrames |cffeda55fSirus.su|r by |cFFFF8080Sesqiwake|r
+## Version: 3.1.0
+## Title-ruRU: X-Perl UnitFrames |cffeda55fSirus.su|r by |cFFFF8080Sesqiwake|r
+## Author: Sesqiwake
+## Title-zhCN: X-Perl 核心
+## Title-zhTW: X-Perl 主要核心
+## Notes: Adapted for Sirus.su by Sesqiwake (original by Zek). 3.1.0: layout profiles; buff caster source; buff tooltip fix; raid group icons on layer change; raid frame load/FPS fix.
+## Notes-ruRU: Адаптировано под Sirus.su (Sesqiwake, оригинал Zek). 3.1.0: профили раскладки; источник бафов; фикс тултипов бафов; иконки групп при смене слоёв; загрузка рейда и FPS.
+## Notes-deDE: Ersetzt die normalen Einheiten, Gruppe, Ziel, Begleiterframe und fügt Ziel des Zieles hinzu.
+## Notes-esES: Reemplazo para los marcos de unidades, con nuevo aspecto para jugador, mascota, grupo, objetivo, objetivo del objetivo, y banda
+## Notes-zhCN: 玩家头像增强插件，附带团队助手功能
+## Notes-zhTW: 提供玩家、隊伍、目標、寵物、目標的目標頭像增強以及團隊框架顯示、團隊助手功能
+## X-eMail: zeksie@gmail.com
+## X-Donate: PayPal:zeksie@gmail.com
+## X-Category: Interface Enhancements
+## X-License: GNU GPL v3, 29 June 2007
+## OptionalDeps: LibHealComm-4.0, LibHealComm-3.0
+## SavedVariables: XPerlConfig, XPerlConfig_Global, XPerlConfigNew, XPerlConfigSavePerCharacter
+## X-Curse-Packaged-Version: 3.1 beta 1
+## X-Curse-Project-Name: X-Perl UnitFrames
+## X-Curse-Project-ID: xperl
+## X-Curse-Repository-ID: wow/xperl/salushyjal-r879fix
+XPerl_Globals.xml
+XPerl.xml
