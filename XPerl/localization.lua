@@ -9,10 +9,13 @@ XPerl_OriginalAuthor	= "|cFFFF8080Zek|r"
 XPerl_Author			= "|cFFFF8080Sesqiwake|r"
 XPerl_SirusTag			= "|cffeda55fAdapted for Sirus.su|r"
 XPerl_Description		= XPerl_ProductName.." by "..XPerl_Author.." — "..XPerl_SirusTag
-XPerl_VersionNumber 	= "3.1.0"
+XPerl_VersionNumber 	= "3.1.1"
 XPerl_Version			= XPerl_Description.." - "..XPerl_VersionNumber
 XPerl_LongDescription	= "UnitFrame replacement for Player, Pet, Party, Target, Target's Target, Focus and Raid.\n"..
 	XPerl_SirusTag.." (fork by "..XPerl_Author..", original by "..XPerl_OriginalAuthor..").\n\n"..
+	"3.1.1 changes:\n"..
+	"• Hidden debuffs: blacklist on player/party/target/ToT/focus/FoT (All tab)\n"..
+	"• Fixed CustomHighlight crash when XPerlDB.custom is missing\n\n"..
 	"3.1.0 changes:\n"..
 	"• Layout profiles: save/apply scale and frame positions (account-wide list)\n"..
 	"• Buff tooltips: show caster source\n"..

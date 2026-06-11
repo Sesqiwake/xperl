@@ -11,6 +11,9 @@ XPerl_Description	    = XPerl_ProductName.." — "..XPerl_SirusTag.." ("..XPerl_
 XPerl_Version		    = XPerl_Description.." - "..XPerl_VersionNumber
 XPerl_LongDescription	= "Замена стандартных фреймов игрока, питомца, группы, цели, цели цели, фокуса и рейда.\n"..
 	XPerl_SirusTag.." (доработка: "..XPerl_Author..", оригинал: "..XPerl_OriginalAuthor..").\n\n"..
+	"Изменения 3.1.1:\n"..
+	"• Скрытие выбранных дебаффов на игроке/группе/цели/фокусе (вкладка «Все»)\n"..
+	"• Исправлен падение Custom Highlight (conf.custom)\n\n"..
 	"Изменения 3.1.0:\n"..
 	"• Профили раскладки: сохранение масштаба и позиций фреймов (общий список на клиенте)\n"..
 	"• В тултипах бафов показывается источник (кастер)\n"..

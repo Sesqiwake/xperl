@@ -820,6 +820,19 @@ XPERL_CONF_ALL_PERCENT_DESC				= "Включает отображение ВСЕ
 XPERL_CONF_ALL_WIDTHBONUS				= "Ширина"
 XPERL_CONF_ALL_WIDTHBONUS_DESC			= "Регулировка ширину всех фреймов"
 
+XPERL_CONF_HIDENDEBUFFS					= "Скрытие дебаффов"
+XPERL_CONF_HIDENDEBUFFS_ENABLE			= "Включить"
+XPERL_CONF_HIDENDEBUFFS_ENABLE_DESC		= "Скрывать выбранные дебаффы на фреймах ниже"
+XPERL_CONF_HIDENDEBUFFS_PLAYER			= "Игрок"
+XPERL_CONF_HIDENDEBUFFS_PARTY			= "Группа"
+XPERL_CONF_HIDENDEBUFFS_TARGET			= "Цель"
+XPERL_CONF_HIDENDEBUFFS_TOT				= "Цель цели"
+XPERL_CONF_HIDENDEBUFFS_FOCUS			= "Фокус"
+XPERL_CONF_HIDENDEBUFFS_FOT				= "Цель фокуса"
+XPERL_CONF_HIDENDEBUFFS_ADD				= "Добавить"
+XPERL_CONF_HIDENDEBUFFS_HINT				= "Ctrl+Shift+ЛКМ по дебаффу при открытых настройках — добавить в список"
+XPERL_CONF_HIDENDEBUFFS_ADDED			= "|cFF33FF33[XPerl]|r Скрыт дебафф: %s"
+
 XPERL_CONF_GLOBAL_BORDERS				= EMBLEM_BORDER	-- "Края"		Generic WoW lozalization
 XPERL_CONF_GLOBAL_BORDERS_DESC			= "Установить цвет и прозрачность для всех краёв фреймов"
 XPERL_CONF_GLOBAL_BACKGROUND			= BACKGROUND	-- "Фон"		Generic WoW lozalization

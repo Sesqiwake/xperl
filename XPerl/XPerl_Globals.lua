@@ -552,5 +552,9 @@ function XPerl_ValidateSettings()
 		}
 	end
 
+	if (XPerl_HiddenDebuffs_EnsureConfig) then
+		XPerl_HiddenDebuffs_EnsureConfig(conf)
+	end
+
 	XPerl_ValidateSettings = nil
 end

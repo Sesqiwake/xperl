@@ -821,6 +821,19 @@ XPERL_CONF_ALL_PERCENT_DESC				= "Enable ALL percentage displays"
 XPERL_CONF_ALL_WIDTHBONUS				= "Extra Width"
 XPERL_CONF_ALL_WIDTHBONUS_DESC			= "Adjust the width of all frames"
 
+XPERL_CONF_HIDENDEBUFFS					= "Hide Debuffs"
+XPERL_CONF_HIDENDEBUFFS_ENABLE			= "Enable"
+XPERL_CONF_HIDENDEBUFFS_ENABLE_DESC		= "Hide selected debuffs on unit frames below"
+XPERL_CONF_HIDENDEBUFFS_PLAYER			= "Player"
+XPERL_CONF_HIDENDEBUFFS_PARTY			= "Party"
+XPERL_CONF_HIDENDEBUFFS_TARGET			= "Target"
+XPERL_CONF_HIDENDEBUFFS_TOT				= "ToT"
+XPERL_CONF_HIDENDEBUFFS_FOCUS			= "Focus"
+XPERL_CONF_HIDENDEBUFFS_FOT				= "FoT"
+XPERL_CONF_HIDENDEBUFFS_ADD				= "Add"
+XPERL_CONF_HIDENDEBUFFS_HINT				= "Ctrl+Shift+LMB on a debuff while options are open adds it to the list"
+XPERL_CONF_HIDENDEBUFFS_ADDED			= "|cFF33FF33[XPerl]|r Hidden debuff: %s"
+
 XPERL_CONF_GLOBAL_BORDERS				= EMBLEM_BORDER	-- "Borders"		Generic WoW lozalization
 XPERL_CONF_GLOBAL_BORDERS_DESC			= "Set the colour and transparency of all frame borders"
 XPERL_CONF_GLOBAL_BACKGROUND			= BACKGROUND	-- "Background"		Generic WoW lozalization

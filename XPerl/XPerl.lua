@@ -2584,6 +2584,12 @@ function XPerl_GetBuffButton(self, buffnum, debuff, createIfAbsent, newID)
 			for k,v in pairs (setup.debuffScripts) do
 				button:SetScript(k, v)
 			end
+			button:RegisterForClicks("LeftButtonUp")
+			button:SetScript("OnClick", function(btn, mouseButton)
+				if (XPerl_HiddenDebuffs_HandleClick and XPerl_HiddenDebuffs_HandleClick(btn, mouseButton)) then
+					return
+				end
+			end)
 		else
 			--buffFrame.UpdateTooltip = setup.updateTooltipBuff
 			button.UpdateTooltip = setup.updateTooltipBuff
@@ -3122,9 +3128,10 @@ function XPerl_Unit_UpdateBuffs(self, maxBuffs, maxDebuffs, castableOnly, curabl
 						isMine = isMine == "player"
 					end
 
-					if (debuff and (((mine == 1) and isMine) or ((mine == 2) and not isMine))) then
+					if (debuff and (((mine == 1) and isMine) or ((mine == 2) and not isMine)) and not (XPerl_HiddenDebuffs_ShouldHide and XPerl_HiddenDebuffs_ShouldHide(self, name))) then
 						local button = XPerl_GetBuffButton(self, buffIconIndex, 1, true, buffnum)
 						button.filter = filter
+						button.debuffName = name
 						button:SetAlpha(1)
 
 						debuffs = debuffs + 1

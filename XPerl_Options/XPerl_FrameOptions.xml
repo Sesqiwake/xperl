@@ -1698,6 +1698,43 @@
 		<HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
 	</Button>
 
+	<Frame name="XPerlHiddenDebuffRowTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="190" y="14"/>
+		</Size>
+		<Frames>
+			<Button name="$parent_Remove" inherits="UIPanelButtonTemplate" text="x">
+				<Size><AbsDimension x="18" y="14"/></Size>
+				<Anchors>
+					<Anchor point="RIGHT"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						XPerl_Options_HiddenDebuffs_RemoveRow(self:GetParent())
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentName" inherits="GameFontHighlightSmall" justifyH="LEFT">
+					<Size><AbsDimension x="160" y="12"/></Size>
+					<Anchors>
+						<Anchor point="LEFT"/>
+						<Anchor point="RIGHT" relativeTo="$parent_Remove" relativePoint="LEFT">
+							<Offset><AbsDimension x="-2" y="0"/></Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				self.nameText = _G[self:GetName().."Name"]
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
 	<Frame name="XPerlProfileRowTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="260" y="16"/>
@@ -11397,6 +11434,277 @@
 							</OnValueChanged>
 						</Scripts>
 					</Slider>
+
+					<Frame name="$parent_HiddenDebuffs">
+						<Size>
+							<AbsDimension x="235" y="205"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parent_Width" relativePoint="BOTTOMLEFT">
+								<Offset><AbsDimension x="0" y="-14"/></Offset>
+							</Anchor>
+						</Anchors>
+						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+							<BackgroundInsets>
+								<AbsInset left="4" right="4" top="4" bottom="4"/>
+							</BackgroundInsets>
+							<TileSize>
+								<AbsValue val="16"/>
+							</TileSize>
+							<EdgeSize>
+								<AbsValue val="12"/>
+							</EdgeSize>
+						</Backdrop>
+						<Scripts>
+							<OnLoad>
+								self:SetBackdropColor(0, 0, 0, 0.65)
+								self:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+							</OnLoad>
+							<OnShow>
+								XPerl_Options_HiddenDebuffs_OnShow()
+							</OnShow>
+						</Scripts>
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString name="$parentTitle" inherits="GameFontNormal" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS">
+									<Anchors>
+										<Anchor point="TOPLEFT">
+											<Offset><AbsDimension x="8" y="-6"/></Offset>
+										</Anchor>
+									</Anchors>
+								</FontString>
+							</Layer>
+						</Layers>
+						<Frames>
+							<CheckButton name="$parent_Enable" inherits="XPerlCheckButtonTemplate">
+								<Anchors>
+									<Anchor point="LEFT" relativeTo="$parentTitle" relativePoint="RIGHT">
+										<Offset><AbsDimension x="10" y="0"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_ENABLE")
+										self.configBase = "XPerlDB.hiddenDebuffs"
+										self.configIndex = "enable"
+										self.configClick = XPerl_OptionActions
+									</OnLoad>
+								</Scripts>
+							</CheckButton>
+							<CheckButton name="$parent_Target" inherits="XPerlCheckButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="-2"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_TARGET")
+										self.configBase = "XPerlDB.hiddenDebuffs"
+										self.configIndex = "target"
+										self.configClick = XPerl_OptionActions
+									</OnLoad>
+								</Scripts>
+							</CheckButton>
+							<CheckButton name="$parent_TargetTarget" inherits="XPerlCheckButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_Target" relativePoint="TOPLEFT">
+										<Offset><AbsDimension x="118" y="0"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_TOT")
+										self.configBase = "XPerlDB.hiddenDebuffs"
+										self.configIndex = "targettarget"
+										self.configClick = XPerl_OptionActions
+									</OnLoad>
+								</Scripts>
+							</CheckButton>
+							<CheckButton name="$parent_Focus" inherits="XPerlCheckButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_Target" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="2"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_FOCUS")
+										self.configBase = "XPerlDB.hiddenDebuffs"
+										self.configIndex = "focus"
+										self.configClick = XPerl_OptionActions
+									</OnLoad>
+								</Scripts>
+							</CheckButton>
+							<CheckButton name="$parent_FocusTarget" inherits="XPerlCheckButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_Focus" relativePoint="TOPLEFT">
+										<Offset><AbsDimension x="118" y="0"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_FOT")
+										self.configBase = "XPerlDB.hiddenDebuffs"
+										self.configIndex = "focustarget"
+										self.configClick = XPerl_OptionActions
+									</OnLoad>
+								</Scripts>
+							</CheckButton>
+							<CheckButton name="$parent_Player" inherits="XPerlCheckButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_Focus" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="2"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_PLAYER")
+										self.configBase = "XPerlDB.hiddenDebuffs"
+										self.configIndex = "player"
+										self.configClick = XPerl_OptionActions
+									</OnLoad>
+								</Scripts>
+							</CheckButton>
+							<CheckButton name="$parent_Party" inherits="XPerlCheckButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_Player" relativePoint="TOPLEFT">
+										<Offset><AbsDimension x="118" y="0"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_PARTY")
+										self.configBase = "XPerlDB.hiddenDebuffs"
+										self.configIndex = "party"
+										self.configClick = XPerl_OptionActions
+									</OnLoad>
+								</Scripts>
+							</CheckButton>
+							<Frame name="$parent_List">
+								<Size><AbsDimension x="215" y="70"/></Size>
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_Player" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="0"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+									<BackgroundInsets>
+										<AbsInset left="3" right="3" top="3" bottom="3"/>
+									</BackgroundInsets>
+									<TileSize>
+										<AbsValue val="16"/>
+									</TileSize>
+									<EdgeSize>
+										<AbsValue val="8"/>
+									</EdgeSize>
+								</Backdrop>
+								<Scripts>
+									<OnLoad>
+										self:SetBackdropColor(0.05, 0.05, 0.05, 0.8)
+										self:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
+										self.scroll = _G[self:GetName().."ScrollBar"]
+									</OnLoad>
+									<OnMouseWheel>
+										if (self.scroll and self.scroll.bar) then
+											if (delta > 0) then
+												self.scroll.bar:SetValue(self.scroll.bar:GetValue() - self.scroll.bar:GetValueStep())
+											else
+												self.scroll.bar:SetValue(self.scroll.bar:GetValue() + self.scroll.bar:GetValueStep())
+											end
+										end
+									</OnMouseWheel>
+								</Scripts>
+								<Frames>
+									<Frame name="$parent1" inherits="XPerlHiddenDebuffRowTemplate" id="1" hidden="true">
+										<Anchors>
+											<Anchor point="TOPLEFT">
+												<Offset><AbsDimension x="2" y="-2"/></Offset>
+											</Anchor>
+										</Anchors>
+									</Frame>
+									<Frame name="$parent2" inherits="XPerlHiddenDebuffRowTemplate" id="2" hidden="true">
+										<Anchors><Anchor point="TOPLEFT" relativeTo="$parent1" relativePoint="BOTTOMLEFT"/></Anchors>
+									</Frame>
+									<Frame name="$parent3" inherits="XPerlHiddenDebuffRowTemplate" id="3" hidden="true">
+										<Anchors><Anchor point="TOPLEFT" relativeTo="$parent2" relativePoint="BOTTOMLEFT"/></Anchors>
+									</Frame>
+									<Frame name="$parent4" inherits="XPerlHiddenDebuffRowTemplate" id="4" hidden="true">
+										<Anchors><Anchor point="TOPLEFT" relativeTo="$parent3" relativePoint="BOTTOMLEFT"/></Anchors>
+									</Frame>
+									<Frame name="$parent5" inherits="XPerlHiddenDebuffRowTemplate" id="5" hidden="true">
+										<Anchors><Anchor point="TOPLEFT" relativeTo="$parent4" relativePoint="BOTTOMLEFT"/></Anchors>
+									</Frame>
+									<ScrollFrame name="$parentScrollBar" inherits="FauxScrollFrameTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$parent1">
+												<Offset><AbsDimension x="-22" y="0"/></Offset>
+											</Anchor>
+											<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$parent5">
+												<Offset><AbsDimension x="0" y="0"/></Offset>
+											</Anchor>
+										</Anchors>
+										<Scripts>
+											<OnLoad>
+												self.bar = _G[self:GetName().."ScrollBar"]
+											</OnLoad>
+											<OnVerticalScroll>
+												FauxScrollFrame_OnVerticalScroll(self, offset, 14, XPerl_Options_HiddenDebuffs_FillList)
+											</OnVerticalScroll>
+											<OnMouseWheel>
+												if (self.bar) then
+													if (delta > 0) then
+														self.bar:SetValue(self.bar:GetValue() - self.bar:GetValueStep())
+													else
+														self.bar:SetValue(self.bar:GetValue() + self.bar:GetValueStep())
+													end
+												end
+											</OnMouseWheel>
+										</Scripts>
+									</ScrollFrame>
+								</Frames>
+							</Frame>
+							<EditBox name="$parent_AddEdit" autoFocus="false" inherits="XPerlOptEditBox">
+								<Size><AbsDimension x="145" y="18"/></Size>
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_List" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="-4"/></Offset>
+									</Anchor>
+								</Anchors>
+							</EditBox>
+							<Button name="$parent_AddBtn" inherits="UIPanelButtonTemplate" text="XPERL_CONF_HIDENDEBUFFS_ADD">
+								<Size><AbsDimension x="62" y="18"/></Size>
+								<Anchors>
+									<Anchor point="LEFT" relativeTo="$parent_AddEdit" relativePoint="RIGHT">
+										<Offset><AbsDimension x="4" y="0"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnClick>
+										XPerl_Options_HiddenDebuffs_AddManual(_G["XPerl_Options_All_Options_HiddenDebuffs_AddEdit"])
+									</OnClick>
+								</Scripts>
+							</Button>
+							<Frame name="$parent_HintArea">
+								<Size><AbsDimension x="220" y="30"/></Size>
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_AddEdit" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="-4"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Layers>
+									<Layer level="ARTWORK">
+										<FontString name="$parentText" inherits="GameFontDisableSmall" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS_HINT">
+											<Anchors>
+												<Anchor point="TOPLEFT"/>
+												<Anchor point="TOPRIGHT"/>
+											</Anchors>
+										</FontString>
+									</Layer>
+								</Layers>
+							</Frame>
+						</Frames>
+					</Frame>
 
 					<Frame name="$parent_AddOns">
 						<Size>

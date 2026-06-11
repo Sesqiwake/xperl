@@ -2107,6 +2107,10 @@ local function XPerl_Global_ConfigDefault(default)
 		countdownStart	= 20,			-- 2.2.2
 	}
 
+	if (XPerl_HiddenDebuffs_Defaults) then
+		default.hiddenDebuffs = XPerl_HiddenDebuffs_Defaults()
+	end
+
 	default.rangeFinder = XPerl_DefaultRangeFinder()
 
 	default.tooltip = {
@@ -2999,6 +3003,12 @@ if (XPerl_UpgradeSettings) then
 				end
 			end
 
+			if (not old.colour) then
+				old.colour = {}
+			end
+			if (not old.colour.bar) then
+				old.colour.bar = XPerl_DefaultBarColours()
+			end
 			if (not old.colour.bar.runic_power or old.colour.bar.runic_power[1]) then
 				if (PowerBarColor) then
 					old.colour.bar.runic_power	= {r = PowerBarColor["RUNIC_POWER"].r, g = PowerBarColor["RUNIC_POWER"].g, b = PowerBarColor["RUNIC_POWER"].b}
@@ -3170,5 +3180,93 @@ if (XPerl_UpgradeSettings) then
 		UpgradeSettings = nil
 		XPerl_Options_UpgradeSettings = nil
 		flist = nil
+	end
+end
+
+-- Hidden debuffs options UI (loaded with XPerl_Options)
+local HIDENDEBUFF_LIST_ROWS = 5
+local HIDENDEBUFF_ROW_HEIGHT = 14
+local HIDENDEBUFF_LIST_PREFIX = "XPerl_Options_All_Options_HiddenDebuffs_List"
+local HIDENDEBUFF_SCROLLBAR = "XPerl_Options_All_Options_HiddenDebuffs_ListScrollBar"
+
+local function HiddenDebuffTrim(s)
+	if (strtrim) then
+		return strtrim(s or "")
+	end
+	return (tostring(s or ""):gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function HiddenDebuffGetRow(i)
+	return _G[HIDENDEBUFF_LIST_PREFIX..i]
+end
+
+function XPerl_Options_HiddenDebuffs_FillList()
+	if (not XPerl_HiddenDebuffs_GetSortedList) then
+		return
+	end
+	local names = XPerl_HiddenDebuffs_GetSortedList()
+	local scroll = _G[HIDENDEBUFF_SCROLLBAR]
+	local offset = 0
+	if (scroll) then
+		offset = FauxScrollFrame_GetOffset(scroll) or 0
+	end
+	for i = 1, HIDENDEBUFF_LIST_ROWS do
+		local row = HiddenDebuffGetRow(i)
+		if (row) then
+			local name = names[offset + i]
+			if (name) then
+				row:Show()
+				if (row.nameText) then
+					row.nameText:SetText(name)
+				end
+				row.spellName = name
+			else
+				row:Hide()
+				row.spellName = nil
+			end
+		end
+	end
+	if (scroll) then
+		FauxScrollFrame_Update(scroll, #names, HIDENDEBUFF_LIST_ROWS, HIDENDEBUFF_ROW_HEIGHT)
+		if (scroll.bar) then
+			if (#names > HIDENDEBUFF_LIST_ROWS) then
+				scroll.bar:Show()
+			else
+				scroll.bar:Hide()
+			end
+		end
+	end
+end
+
+function XPerl_Options_HiddenDebuffs_OnShow()
+	if (not XPerlDB) then
+		return
+	end
+	if (XPerl_HiddenDebuffs_EnsureConfig) then
+		XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
+	end
+	local scroll = _G[HIDENDEBUFF_SCROLLBAR]
+	if (scroll) then
+		FauxScrollFrame_SetOffset(scroll, 0)
+	end
+	XPerl_Options_HiddenDebuffs_FillList()
+end
+
+function XPerl_Options_HiddenDebuffs_AddManual(editBox)
+	if (not editBox or not XPerl_HiddenDebuffs_Add) then
+		return
+	end
+	local name = HiddenDebuffTrim(editBox:GetText())
+	if (name == "") then
+		return
+	end
+	if (XPerl_HiddenDebuffs_Add(name)) then
+		editBox:SetText("")
+	end
+end
+
+function XPerl_Options_HiddenDebuffs_RemoveRow(row)
+	if (row and row.spellName and XPerl_HiddenDebuffs_Remove) then
+		XPerl_HiddenDebuffs_Remove(row.spellName)
 	end
 end
