@@ -7,7 +7,26 @@ if (not XPerl_RequestConfig) then
 end
 
 local conf
-XPerl_RequestConfig(function(new) conf = new.custom end, "$Revision: 368 $")
+
+local function EnsureCustomConfig(db)
+	if (not db) then
+		return {
+			enable = true,
+			alpha = 0.5,
+			blend = "ADD",
+		}
+	end
+	if (not db.custom) then
+		db.custom = {
+			enable = true,
+			alpha = 0.5,
+			blend = "ADD",
+		}
+	end
+	return db.custom
+end
+
+XPerl_RequestConfig(function(new) conf = EnsureCustomConfig(new) end, "$Revision: 368 $")
 
 local ch = CreateFrame("Frame", "XPerl_Custom")
 ch.active = {}
@@ -372,7 +391,7 @@ end
 
 -- ch:Check
 function ch:Check(frame, unit)
-	if (not conf.enable) then
+	if (not conf or not conf.enable) then
 		return
 	end
 
@@ -404,10 +423,7 @@ function ch:Check(frame, unit)
 end
 
 if (not conf) then
-	conf = {
-		enable = true,
-		zones = ch:DefaultZoneData(),
-	}
+	conf = EnsureCustomConfig(nil)
 end
 
 ch:SetScript("OnEvent", ch.OnEvent)

@@ -544,5 +544,13 @@ function XPerl_ValidateSettings()
 		conf.buffs.names = 1
 	end
 
+	if (not conf.custom) then
+		conf.custom = {
+			enable = true,
+			alpha = 0.5,
+			blend = "ADD",
+		}
+	end
+
 	XPerl_ValidateSettings = nil
 end
