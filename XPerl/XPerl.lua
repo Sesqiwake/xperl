@@ -3394,18 +3394,586 @@ local alternateCamera = {
 }
 local dragonmawIllusion = GetSpellInfo(42016)
 
+local function XPerl_Portrait3D_ParseGuidId(guid)
+	if (not guid) then
+		return nil
+	end
+	return tonumber(strsub(guid, -12, -7), 16)
+end
+
+local function XPerl_Portrait3D_GetModelPath(modelFrame)
+	if (not modelFrame or not modelFrame.GetModel) then
+		return nil
+	end
+	local ok, path = pcall(modelFrame.GetModel, modelFrame)
+	if (ok and type(path) == "string" and path ~= "") then
+		return path
+	end
+end
+
+local function XPerl_Portrait3D_ChooseCamera(argUnit)
+	local id = XPerl_Portrait3D_ParseGuidId(UnitGUID(argUnit))
+	if (id and alternateCamera[id]) then
+		return 1
+	end
+	if (dragonmawIllusion and UnitBuff(argUnit, dragonmawIllusion)) then
+		return 1
+	end
+	return 0
+end
+
+-- Sirus/HD portrait crop (SetUnit only — SetModel breaks textures)
+local hdPortraitBrokenRaces = {
+	Scourge = true,
+	Human = true,
+	Dwarf = true,
+	DarkIronDwarf = true,
+	Tauren = true,
+	Vulpera = true,
+	Dracthyr = true,
+}
+
+local hdPortraitShapeshift = {
+	hdCamera = 1,
+	facing = 0.46,
+	rotation = 0,
+	posX = 0,
+	posY = 0.15,
+	posZ = -1.10,
+}
+
+-- owlbear before bear ("druidowlbear2" contains "bear")
+local hdPortraitModelPatterns = {
+	{pat = "owlbear", posZ = -1.35, posY = 0.26, facing = 0.48},
+	{pat = "moonkin", posZ = -1.35, posY = 0.26, facing = 0.48},
+	{pat = "tindralmoonkin", posZ = -1.35, posY = 0.26, facing = 0.48},
+	{pat = "epicdruidflightalliance", shapeshiftCrop = true, hdCamera = 0, posZ = -0.92, posY = 0.17, facing = 0.46},
+	{pat = "epicdruidflighthorde", shapeshiftCrop = true, hdCamera = 0, posZ = -0.92, posY = 0.17, facing = 0.46},
+	{pat = "epicdruidflightworgen", shapeshiftCrop = true, hdCamera = 0, posZ = -0.92, posY = 0.17, facing = 0.46},
+	{pat = "epicdruidflighttroll", posOnlyFix = true, hdCamera = 1, posZ = -1.22, posY = 0.20, facing = 0.46},
+	-- fallback для epicdruidflight{race} без отдельной строки (до troll/zandalar — они выше)
+	{pat = "epicdruidflight", shapeshiftCrop = true, hdCamera = 0, posZ = -0.92, posY = 0.17, facing = 0.46},
+	{pat = "druidflightzandalaritroll", shapeshiftCrop = true, hdCamera = 0, posZ = -0.92, posY = 0.17, facing = 0.46},
+	{pat = "stormcrow", posZ = -1.20, posY = 0.18, facing = 0.46},
+	{pat = "sealion", posZ = -1.05, posY = 0.12, facing = 0.45},
+	{pat = "druidbear", posZ = -1.05, posY = 0.14, facing = 0.44},
+	{pat = "druidcat", posZ = -0.95, posY = 0.12, facing = 0.46},
+	{pat = "vulperafemalecreature", shapeshiftCrop = true, hdCamera = 1, posZ = -0.62, posY = 0.07, facing = 0.44},
+	{pat = "vulpera\\female", shapeshiftCrop = true, hdCamera = 1, posZ = -0.62, posY = 0.07, facing = 0.44},
+	{pat = "vulpera\\male", shapeshiftCrop = true, hdCamera = 1, posZ = -0.64, posY = 0.08, facing = 0.45},
+	{pat = "drakonid", shapeshiftCrop = true, hdCamera = 1, posZ = -1.22, posY = 0.19, facing = 0.44},
+	{pat = "dragonspawn", shapeshiftCrop = true, hdCamera = 1, posZ = -1.22, posY = 0.19, facing = 0.44},
+	{pat = "earthelemental", shapeshiftCrop = true, hdCamera = 1, posZ = -1.18, posY = 0.20, facing = 0.44},
+	-- Bank/cosmetic morph (small creature)
+	{pat = "firefly", shapeshiftCrop = true, hdCamera = 0, posZ = -0.45, posY = 0.06, facing = 0.44},
+	{pat = "flyingsprite", shapeshiftCrop = true, hdCamera = 0, posZ = -0.45, posY = 0.06, facing = 0.44},
+	{pat = "skeleton_hd", shapeshiftCrop = true, hdCamera = 0, posZ = -0.58, posY = 0.08, facing = 0.44},
+	{pat = "skeleton_hd", shapeshiftCrop = true, hdCamera = 0, posZ = -0.62, posY = 0.08, facing = 0.46},
+	-- Battle companions (спутник), not hunter pets — cam1+posOnly (cam0 crop не работает на NPC creature)
+	{pat = "banelingpet", posOnlyFix = true, hdCamera = 1, posZ = -0.95, posY = 0.12, facing = 0.46},
+	{pat = "batpet", posOnlyFix = true, hdCamera = 1, posZ = -0.70, posY = 0.08, facing = 0.44},
+	{pat = "druidtravel", posZ = -1.10, posY = 0.12, facing = 0.45},
+	{pat = "treant", posZ = -1.20, posY = 0.18, facing = 0.42},
+}
+
+local hdPortraitDefaults = {
+	hdCamera = 1,
+	facing = 0.46,
+	rotation = 0,
+	posX = 0,
+	posY = 0.08,
+	posZ = -0.65,
+	camDistanceScale = 0.06,
+	portraitZoom = 1.3,
+}
+
+local hdPortraitRace = {
+	Scourge = {
+		male = {facing = 0.46, posY = 0.08, posZ = -0.62},
+		female = {facing = 0.44, posY = 0.08, posZ = -0.60},
+	},
+	Human = {
+		male = {hdCamera = 0, posZ = -0.54, posY = 0.13, facing = 0.45},
+		female = {posZ = -0.68, posY = 0.08, facing = 0.44},
+	},
+	Dwarf = {
+		male = {hdCamera = 1, posZ = -0.68, posY = 0.10, facing = 0.44},
+		female = {hdCamera = 0, posZ = -0.42, posY = 0.14, facing = 0.43},
+	},
+	DarkIronDwarf = {
+		male = {hdCamera = 1, posZ = -0.74, posY = 0.10, facing = 0.44},
+		female = {hdCamera = 0, posZ = -0.42, posY = 0.14, facing = 0.43},
+	},
+	Tauren = {
+		male = {posZ = -0.82, posY = 0.11, facing = 0.40},
+		female = {posZ = -0.78, posY = 0.10, facing = 0.40},
+	},
+	Vulpera = {
+		male = {posZ = -0.64, posY = 0.08, facing = 0.45},
+		female = {posZ = -0.62, posY = 0.07, facing = 0.44},
+	},
+	Dracthyr = {
+		male = {hdCamera = 0, posZ = -0.52, posY = 0.15, facing = 0.43},
+		female = {hdCamera = 1, posZ = -0.70, posY = 0.09, facing = 0.42},
+	},
+}
+
+-- Dracthyr dragon form (character\dracthyr\dragon\...)
+local hdPortraitDracthyrDragon = {
+	male = {
+		hdCamera = 1,
+		posX = 0,
+		posY = 0.10,
+		posZ = -0.76,
+		facing = 0.44,
+		rotation = 0,
+	},
+	female = {
+		hdCamera = 1,
+		posX = 0,
+		posY = 0.09,
+		posZ = -0.74,
+		facing = 0.43,
+		rotation = 0,
+	},
+}
+
+local function XPerl_Portrait3D_IsHdModelPath(path)
+	if (not path) then
+		return false
+	end
+	local lower = strlower(path)
+	return strfind(lower, "_hd%.m2") or strfind(lower, "_hd\\") or strfind(lower, "_hd/")
+end
+
+local function XPerl_Portrait3D_IsShapeshiftModel(path)
+	if (not path or type(path) ~= "string") then
+		return false
+	end
+	local lower = strlower(path)
+	return strfind(lower, "^creature\\") or strfind(lower, "^creature/")
+end
+
+local function XPerl_Portrait3D_IsDracthyrDragonForm(path)
+	if (not path or type(path) ~= "string") then
+		return false
+	end
+	local lower = strlower(path)
+	return strfind(lower, "dracthyr\\dragon\\") or strfind(lower, "dracthyr/dragon/")
+		or strfind(lower, "dracthyrdragon")
+end
+
+-- character\race\... — UnitRace may differ (renegades, illusions)
+local hdPortraitPathRaceAliases = {
+	scourge = "Scourge",
+	human = "Human",
+	dwarf = "Dwarf",
+	darkirondwarf = "DarkIronDwarf",
+	gnome = "Gnome",
+	tauren = "Tauren",
+	orc = "Orc",
+	troll = "Troll",
+	nightelf = "NightElf",
+	draenei = "Draenei",
+	bloodelf = "BloodElf",
+	worgen = "Worgen",
+	goblin = "Goblin",
+	pandaren = "Pandaren",
+	vulpera = "Vulpera",
+	dracthyr = "Dracthyr",
+	nightborne = "Nightborne",
+	voidelf = "VoidElf",
+	lightforged = "Lightforged",
+	eredar = "Eredar",
+	zandalari = "ZandalariTroll",
+	naga = "Naga",
+}
+
+local function XPerl_Portrait3D_GetRaceFromModelPath(path)
+	if (not path or type(path) ~= "string") then
+		return nil
+	end
+	local lower = strlower(path)
+	local raceFolder = strmatch(lower, "^character\\([^\\]+)\\") or strmatch(lower, "^character/([^/]+)/")
+	if (not raceFolder) then
+		return nil
+	end
+	if (hdPortraitPathRaceAliases[raceFolder]) then
+		return hdPortraitPathRaceAliases[raceFolder]
+	end
+	for raceFile in pairs(hdPortraitRace) do
+		if (strlower(raceFile) == raceFolder) then
+			return raceFile
+		end
+	end
+end
+
+local function XPerl_Portrait3D_GetPortraitRace(argUnit, path)
+	local pathRace = path and XPerl_Portrait3D_GetRaceFromModelPath(path)
+	if (pathRace) then
+		return pathRace
+	end
+	local _, raceFile = UnitRace(argUnit)
+	return raceFile
+end
+
+-- UnitRace vs model path (renegades, illusions)
+local function XPerl_Portrait3D_IsDisguise(argUnit, path)
+	local pathRace = path and XPerl_Portrait3D_GetRaceFromModelPath(path)
+	if (not pathRace) then
+		return false
+	end
+	local _, unitRace = UnitRace(argUnit)
+	return unitRace and pathRace ~= unitRace
+end
+
+local hdPortraitDisguiseHd = {
+	hdCamera = 0,
+	posX = 0,
+	posY = 0.10,
+	posZ = -0.58,
+	facing = 0.45,
+	rotation = 0,
+}
+
+local function XPerl_Portrait3D_IsDruidFormCreature(path, argUnit)
+	if (not path) then
+		return false
+	end
+	local lower = strlower(path)
+	local druidPats = {
+		"druidbear", "druidcat", "druidtravel", "stormcrow", "sealion",
+		"owlbear", "moonkin", "tindralmoonkin",
+		"treant", "druidtreant", "eversongent",
+	}
+	for i = 1, #druidPats do
+		if (strfind(lower, druidPats[i])) then
+			return true
+		end
+	end
+	-- Sirus: форма дерева — custom ent (eversongent и др.), creatureType Элементаль
+	if (argUnit and UnitIsPlayer(argUnit) and XPerl_Portrait3D_IsShapeshiftModel(path)) then
+		local _, classFile = UnitClass(argUnit)
+		if (classFile == "DRUID") then
+			local ct = strlower(UnitCreatureType(argUnit) or "")
+			if (strfind(ct, "element") or strfind(ct, "элемент")) then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+-- Class creature forms: SetCamera(0) without crop (warlock meta, etc.)
+local function XPerl_Portrait3D_IsClassFormCam0(path)
+	if (not path) then
+		return false
+	end
+	local lower = strlower(path)
+	local classFormPats = {
+		"demonform",
+	}
+	for i = 1, #classFormPats do
+		if (strfind(lower, classFormPats[i])) then
+			return true
+		end
+	end
+	return false
+end
+
+local function XPerl_Portrait3D_GetShapeshiftFixRow(path)
+	if (not path) then
+		return nil
+	end
+	local lower = strlower(path)
+	for i = 1, #hdPortraitModelPatterns do
+		local row = hdPortraitModelPatterns[i]
+		if ((row.posOnlyFix or row.shapeshiftCrop) and strfind(lower, row.pat)) then
+			return row
+		end
+	end
+end
+
+local function XPerl_Portrait3D_MatchShapeshiftFix(path)
+	return XPerl_Portrait3D_GetShapeshiftFixRow(path) and true or false
+end
+
+local function XPerl_Portrait3D_NeedsHdFix(argUnit, path)
+	if (not path or path == "") then
+		return false
+	end
+	if (XPerl_Portrait3D_MatchShapeshiftFix(path)) then
+		return true
+	end
+	if (XPerl_Portrait3D_IsDracthyrDragonForm(path)) then
+		return true
+	end
+	-- Druid forms: cam0, no crop
+	if (XPerl_Portrait3D_IsShapeshiftModel(path)) then
+		if (XPerl_Portrait3D_IsDruidFormCreature(path, argUnit)) then
+			return false
+		end
+		if (XPerl_Portrait3D_IsClassFormCam0(path)) then
+			return false
+		end
+		if (UnitIsPlayer(argUnit)) then
+			return true
+		end
+		return false
+	end
+	local raceFile = XPerl_Portrait3D_GetPortraitRace(argUnit, path)
+	if (XPerl_Portrait3D_IsDisguise(argUnit, path) and not XPerl_Portrait3D_IsHdModelPath(path)) then
+		return false
+	end
+	if (raceFile and hdPortraitBrokenRaces[raceFile]) then
+		return true
+	end
+	if (XPerl_Portrait3D_IsDisguise(argUnit, path) and XPerl_Portrait3D_IsHdModelPath(path)) then
+		return true
+	end
+	return false
+end
+
+local function XPerl_Portrait3D_GetFixSettings(argUnit, path)
+	local settings = {}
+	for k, v in pairs(hdPortraitDefaults) do
+		if (type(v) == "table") then
+			settings[k] = {v[1], v[2], v[3]}
+		else
+			settings[k] = v
+		end
+	end
+
+	if (path and XPerl_Portrait3D_IsDracthyrDragonForm(path)) then
+		local sexKey = (UnitSex(argUnit) == 3) and "female" or "male"
+		local dragonFix = hdPortraitDracthyrDragon[sexKey] or hdPortraitDracthyrDragon.male
+		settings = {
+			dracthyrDragon = true,
+			hdCamera = dragonFix.hdCamera,
+			posX = dragonFix.posX,
+			posY = dragonFix.posY,
+			posZ = dragonFix.posZ,
+			facing = dragonFix.facing,
+			rotation = dragonFix.rotation,
+		}
+		return settings
+	end
+
+	if (path and (XPerl_Portrait3D_IsShapeshiftModel(path) or XPerl_Portrait3D_GetShapeshiftFixRow(path))) then
+		local fixRow = XPerl_Portrait3D_GetShapeshiftFixRow(path)
+		if (fixRow) then
+			if (fixRow.posOnlyFix) then
+				settings = {
+					posOnlyFix = true,
+					hdCamera = 0,
+					posX = 0,
+					posY = 0,
+					posZ = 0,
+					facing = 0.45,
+					rotation = 0,
+				}
+				for k, v in pairs(fixRow) do
+					if (k ~= "pat" and k ~= "shapeshiftCrop") then
+						settings[k] = v
+					end
+				end
+				return settings
+			end
+			if (fixRow.shapeshiftCrop) then
+				settings = {
+					shapeshiftCrop = true,
+					hdCamera = 0,
+					posX = 0,
+					posY = 0,
+					posZ = 0,
+					facing = 0.45,
+					rotation = 0,
+				}
+				for k, v in pairs(fixRow) do
+					if (k ~= "pat" and k ~= "shapeshiftCrop" and k ~= "posOnlyFix") then
+						settings[k] = v
+					end
+				end
+				return settings
+			end
+		end
+
+		for k, v in pairs(hdPortraitShapeshift) do
+			if (type(v) == "table") then
+				settings[k] = {v[1], v[2], v[3]}
+			else
+				settings[k] = v
+			end
+		end
+		local lower = strlower(path)
+		for i = 1, #hdPortraitModelPatterns do
+			local row = hdPortraitModelPatterns[i]
+			if (strfind(lower, row.pat)) then
+				for k, v in pairs(row) do
+					if (k ~= "pat") then
+						if (type(v) == "table") then
+							settings[k] = {v[1], v[2], v[3]}
+						else
+							settings[k] = v
+						end
+					end
+				end
+				break
+			end
+		end
+		return settings
+	end
+
+	local raceFile = XPerl_Portrait3D_GetPortraitRace(argUnit, path)
+	local sexKey = (UnitSex(argUnit) == 3) and "female" or "male"
+	if (raceFile and hdPortraitRace[raceFile] and hdPortraitRace[raceFile][sexKey]) then
+		for k, v in pairs(hdPortraitRace[raceFile][sexKey]) do
+			if (type(v) == "table") then
+				settings[k] = {v[1], v[2], v[3]}
+			else
+				settings[k] = v
+			end
+		end
+	end
+	if (XPerl_Portrait3D_IsDisguise(argUnit, path) and XPerl_Portrait3D_IsHdModelPath(path)) then
+		if (not (raceFile and hdPortraitRace[raceFile] and hdPortraitRace[raceFile][sexKey])) then
+			for k, v in pairs(hdPortraitDisguiseHd) do
+				settings[k] = v
+			end
+		end
+	end
+
+	return settings
+end
+
+local function XPerl_Portrait3D_SafeMethod(modelFrame, method, ...)
+	if (modelFrame and modelFrame[method]) then
+		return pcall(modelFrame[method], modelFrame, ...)
+	end
+	return false
+end
+
+local function XPerl_Portrait3D_ApplyHdFix(modelFrame, argUnit)
+	local path = XPerl_Portrait3D_GetModelPath(modelFrame)
+	if (not XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
+		return false
+	end
+
+	local fix = XPerl_Portrait3D_GetFixSettings(argUnit, path)
+	local posX, posY, posZ = fix.posX or 0, fix.posY or 0, fix.posZ or 0
+
+	local function applyPosition()
+		if (modelFrame.SetPosition) then
+			modelFrame:SetPosition(posX, posY, posZ)
+		end
+	end
+
+	if (fix.posOnlyFix) then
+		if (fix.hdCamera ~= nil and modelFrame.SetCamera) then
+			modelFrame:SetCamera(fix.hdCamera)
+		end
+		if (fix.facing and modelFrame.SetFacing) then
+			modelFrame:SetFacing(fix.facing)
+		end
+		if (fix.rotation and modelFrame.SetRotation) then
+			modelFrame:SetRotation(fix.rotation)
+		end
+		applyPosition()
+		applyPosition()
+		return true
+	end
+
+	applyPosition()
+	if (fix.hdCamera ~= nil and modelFrame.SetCamera) then
+		modelFrame:SetCamera(fix.hdCamera)
+	end
+	if (fix.facing and modelFrame.SetFacing) then
+		modelFrame:SetFacing(fix.facing)
+	end
+	if (fix.rotation and modelFrame.SetRotation) then
+		modelFrame:SetRotation(fix.rotation)
+	end
+	applyPosition()
+	if (not fix.posOnlyFix and not fix.shapeshiftCrop and not fix.dracthyrDragon) then
+		if (fix.camDistanceScale) then
+			XPerl_Portrait3D_SafeMethod(modelFrame, "SetCamDistanceScale", fix.camDistanceScale)
+		end
+		if (fix.portraitZoom) then
+			XPerl_Portrait3D_SafeMethod(modelFrame, "SetPortraitZoom", fix.portraitZoom)
+		end
+	end
+
+	return true
+end
+
+local function XPerl_Portrait3D_AfterModelLoad(modelFrame, argUnit)
+	XPerl_Portrait3D_ApplyHdFix(modelFrame, argUnit)
+end
+
+local function XPerl_Portrait3D_ScheduleAfterLoad(modelFrame, argUnit, camera)
+	local state = {waited = 0, tries = 0, phase = "load"}
+
+	modelFrame:SetScript("OnUpdate", function(mf, elapsed)
+		state.waited = state.waited + elapsed
+
+		if (state.phase == "load") then
+			if (state.waited < 0.05) then
+				return
+			end
+			state.waited = 0
+			state.tries = state.tries + 1
+
+			local path = XPerl_Portrait3D_GetModelPath(mf)
+			if (not path and state.tries < 30) then
+				return
+			end
+
+			if (not XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
+				if (path and mf.SetCamera) then
+					mf:SetCamera(camera)
+				end
+				mf:SetScript("OnUpdate", nil)
+				return
+			end
+
+			XPerl_Portrait3D_AfterModelLoad(mf, argUnit)
+
+			state.phase = "refix"
+			state.waited = 0
+			return
+		end
+
+		if (state.phase == "refix") then
+			if (state.waited < 0.25) then
+				return
+			end
+			mf:SetScript("OnUpdate", nil)
+			XPerl_Portrait3D_AfterModelLoad(mf, argUnit)
+		end
+	end)
+end
+
 -- PerlSetPortrait3D
 local function XPerlSetPortrait3D(self, argUnit)
 	self:ClearModel()
 	self:SetUnit(argUnit)
 
-	local guid = UnitGUID(argUnit)
-	local id = guid and tonumber(strsub(guid, -12, -7), 16)
-	if (alternateCamera[id] or UnitBuff(argUnit, dragonmawIllusion)) then
-		self:SetCamera(1)
-	else
-		self:SetCamera(0)
+	local camera = XPerl_Portrait3D_ChooseCamera(argUnit)
+	local path = XPerl_Portrait3D_GetModelPath(self)
+	if (path and XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
+		local fix = XPerl_Portrait3D_GetFixSettings(argUnit, path)
+		if (fix.hdCamera ~= nil) then
+			camera = fix.hdCamera
+		end
 	end
+	if (path) then
+		self:SetCamera(camera)
+		if (XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
+			XPerl_Portrait3D_ApplyHdFix(self, argUnit)
+		end
+	end
+
+	XPerl_Portrait3D_ScheduleAfterLoad(self, argUnit, camera)
 end
 
 -- XPerl_Unit_UpdatePortrait()
