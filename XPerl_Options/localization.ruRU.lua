@@ -16,13 +16,13 @@ XPERL_CONF_TITLE9						= "Цвета"
 XPERL_CONF_TITLE10						= "Помощник"
 XPERL_CONF_TITLE11						= "Монитор"
 XPERL_CONF_TITLE12						= "Админ"
-XPERL_CONF_TITLE13						= "Профили"
+XPERL_CONF_TITLE13						= "Custom Sirus"
 
 XPERL_CONF_PROFILES						= "Профили"
-XPERL_CONF_PROFILES_DESC				= "Сохранение и загрузка позиций фреймов, масштаба, видимых групп рейда и связанных параметров раскладки."
-XPERL_CONF_PROFILES_DESC2				= "Профили общие для аккаунта. Галочка — отметить, x — удалить профиль, корзина — удалить все отмеченные."
+XPERL_CONF_PROFILES_DESC				= "Профили раскладки и настройки Sirus."
+XPERL_CONF_PROFILES_DESC2				= "✓ — отметить, x — удалить, корзина — все отмеченные."
 XPERL_CONF_PROFILES_DELETE_DESC			= "Удалить отмеченные галочкой профили (или имя из поля, если ничего не отмечено)"
-XPERL_CONF_PROFILES_SAVE				= "Сохр-ть"
+XPERL_CONF_PROFILES_SAVE				= "Сохранить"
 XPERL_CONF_PROFILES_SAVE_DESC			= "Сохранить текущую раскладку как именованный профиль"
 XPERL_CONF_PROFILES_APPLY				= "Применить"
 XPERL_CONF_PROFILES_APPLY_DESC			= "Применить выбранный профиль"
@@ -33,6 +33,8 @@ XPERL_CONF_PROFILES_ACTIVE_FMT			= "Активный профиль: |cff00ff00%
 XPERL_CONF_PROFILES_SAVED				= "Профиль сохранён: %s"
 XPERL_CONF_PROFILES_APPLIED				= "Профиль применён: %s"
 XPERL_CONF_PROFILES_NOT_FOUND				= "Профиль не найден: %s"
+
+XPERL_CONF_SIRUS_RESERVED				= "Зарезервировано"
 
 XPERL_CONF_OPTIONS_COLOUR				= "Сменить цвет в окне настроек"
 

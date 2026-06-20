@@ -3186,8 +3186,8 @@ end
 -- Hidden debuffs options UI (loaded with XPerl_Options)
 local HIDENDEBUFF_LIST_ROWS = 5
 local HIDENDEBUFF_ROW_HEIGHT = 14
-local HIDENDEBUFF_LIST_PREFIX = "XPerl_Options_All_Options_HiddenDebuffs_List"
-local HIDENDEBUFF_SCROLLBAR = "XPerl_Options_All_Options_HiddenDebuffs_ListScrollBar"
+local HIDENDEBUFF_LIST_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_List"
+local HIDENDEBUFF_SCROLLBAR = "XPerl_Options_Profiles_HiddenDebuffs_ListScrollBar"
 
 local function HiddenDebuffTrim(s)
 	if (strtrim) then

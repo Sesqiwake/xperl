@@ -24,7 +24,7 @@ local POSITION_FRAMES = {
 }
 
 local profilesMigrated
-local PROFILE_ROW_COUNT = 12
+local PROFILE_ROW_COUNT = 9
 local PROFILE_ROW_PREFIX = "XPerl_Options_Profiles_List"
 
 local function GetProfileRow(i)
@@ -563,6 +563,8 @@ function XPerl_Profiles_InitPanel(panel)
 		local row = GetProfileRow(i)
 		if (row) then
 			panel.rows[i] = row
+			row.master = panel
+			row.nameText = row.nameText or _G[row:GetName().."_LabelText"]
 			row:Hide()
 		end
 	end
@@ -687,7 +689,16 @@ local function SetProfileRow(row, profileName, listIndex, panel, active, selecti
 
 	local mark = _G[row:GetName().."_Mark"]
 	local label = _G[row:GetName().."_Label"]
+	local labelText = row.nameText or _G[row:GetName().."_LabelText"]
 	local del = _G[row:GetName().."_Del"]
+
+	local function SetLabelText(text)
+		if (labelText) then
+			labelText:SetText(text or "")
+		elseif (label) then
+			label:SetText(text or "")
+		end
+	end
 
 	if (not profileName) then
 		row:Hide()
@@ -695,8 +706,8 @@ local function SetProfileRow(row, profileName, listIndex, panel, active, selecti
 			mark:Hide()
 			mark:SetChecked(false)
 		end
+		SetLabelText("")
 		if (label) then
-			label:SetText("")
 			label:UnlockHighlight()
 		end
 		if (del) then
@@ -710,12 +721,12 @@ local function SetProfileRow(row, profileName, listIndex, panel, active, selecti
 		mark:Show()
 		mark:SetChecked(panel.marked and panel.marked[profileName] and true or false)
 	end
+	if (active and profileName == active) then
+		SetLabelText("|cff00ff00"..profileName.."|r")
+	else
+		SetLabelText(profileName)
+	end
 	if (label) then
-		if (active and profileName == active) then
-			label:SetText("|cff00ff00"..profileName.."|r")
-		else
-			label:SetText(profileName)
-		end
 		if (listIndex == selection) then
 			label:LockHighlight()
 		else
@@ -737,7 +748,10 @@ function XPerl_Profiles_Fill(panel, selectName)
 	local list = XPerl_Profiles_GetNameList()
 	local active = XPerl_Profiles_GetActive()
 	local scroll = panel.scrollBar
-	local offset = (scroll and scroll.bar and scroll.bar:GetValue()) or 0
+	local offset = 0
+	if (scroll) then
+		offset = FauxScrollFrame_GetOffset(scroll) or 0
+	end
 	local selection = panel.selection or 1
 
 	panel.start = offset + 1
@@ -774,6 +788,13 @@ function XPerl_Profiles_Fill(panel, selectName)
 
 	if (scroll) then
 		FauxScrollFrame_Update(scroll, #list, PROFILE_ROW_COUNT, 16)
+		if (scroll.bar) then
+			if (#list > PROFILE_ROW_COUNT) then
+				scroll.bar:Show()
+			else
+				scroll.bar:Hide()
+			end
+		end
 	end
 
 	local nameBox = _G[panel:GetName().."_Name"]

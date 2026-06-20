@@ -39,27 +39,6 @@ function XPerl_HiddenDebuffs_EnsureConfig(db)
 	if (not cfg.list) then
 		cfg.list = {}
 	end
-	if (cfg.enable == nil) then
-		cfg.enable = true
-	end
-	if (cfg.player == nil) then
-		cfg.player = true
-	end
-	if (cfg.party == nil) then
-		cfg.party = true
-	end
-	if (cfg.target == nil) then
-		cfg.target = true
-	end
-	if (cfg.targettarget == nil) then
-		cfg.targettarget = true
-	end
-	if (cfg.focus == nil) then
-		cfg.focus = true
-	end
-	if (cfg.focustarget == nil) then
-		cfg.focustarget = true
-	end
 	return cfg
 end
 
@@ -129,7 +108,7 @@ function XPerl_HiddenDebuffs_Add(debuffName)
 		XPerl_Options_HiddenDebuffs_FillList()
 	end
 
-	XPerl_OptionActions()
+	XPerl_HiddenDebuffs_OnOptionClick()
 	return true
 end
 
@@ -149,17 +128,60 @@ function XPerl_HiddenDebuffs_Remove(debuffName)
 		XPerl_Options_HiddenDebuffs_FillList()
 	end
 
-	XPerl_OptionActions()
+	XPerl_HiddenDebuffs_OnOptionClick()
 	return true
 end
+
+local REFRESH_BUFF_FRAMES = {
+	XPerl_Target = true,
+	XPerl_TargetTarget = true,
+	XPerl_Focus = true,
+	XPerl_FocusTarget = true,
+}
 
 function XPerl_HiddenDebuffs_RefreshUnitFrame(unitFrame)
 	if (not unitFrame or not unitFrame.partyid or not unitFrame.conf) then
 		return
 	end
+
+	local frameName = unitFrame:GetName()
+	if (frameName and REFRESH_BUFF_FRAMES[frameName] and XPerl_Targets_BuffUpdate) then
+		XPerl_Targets_BuffUpdate(unitFrame)
+		return
+	end
+
+	if (not unitFrame.buffFrame) then
+		return
+	end
+
 	if (XPerl_Unit_UpdateBuffs) then
 		XPerl_Unit_UpdateBuffs(unitFrame, nil, nil, unitFrame.conf.buffs and unitFrame.conf.buffs.castable, unitFrame.conf.debuffs and unitFrame.conf.debuffs.curable)
 	end
+end
+
+function XPerl_HiddenDebuffs_RefreshAll()
+	local frames = {
+		XPerl_Player, XPerl_Target, XPerl_TargetTarget, XPerl_Focus, XPerl_FocusTarget,
+	}
+	for i = 1, #frames do
+		XPerl_HiddenDebuffs_RefreshUnitFrame(frames[i])
+	end
+	for i = 1, 4 do
+		XPerl_HiddenDebuffs_RefreshUnitFrame(_G["XPerl_party"..i])
+	end
+end
+
+function XPerl_HiddenDebuffs_OnOptionClick(checkbox)
+	if (checkbox and checkbox.configBase == "XPerlDB.hiddenDebuffs" and checkbox.configIndex) then
+		local cfg = XPerlDB and XPerlDB.hiddenDebuffs
+		if (cfg) then
+			cfg[checkbox.configIndex] = checkbox:GetChecked() and true or false
+		end
+	end
+	if (XPerl_OptionActions) then
+		XPerl_OptionActions()
+	end
+	XPerl_HiddenDebuffs_RefreshAll()
 end
 
 function XPerl_HiddenDebuffs_HandleClick(button, mouseButton)

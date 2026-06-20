@@ -695,18 +695,21 @@ function XPerl_SetHealthBar(self, hp, Max)
 	local bar = self.statsFrame.healthBar
 
 	bar:SetMinMaxValues(0, Max)
-    local percent = max(0, hp / Max) -- Fix for SetFormatted text displaying -21474... for 0 / 0			
-            
-    if (conf.bar.inverse) then
+	local percent = 0
+	if (Max and Max > 0) then
+		percent = min(1, max(0, hp / Max))
+	end
+
+	if (conf.bar.inverse) then
 
 		bar:SetValue(Max - hp)
-		bar.tex:SetTexCoord(0, max(0,(1 - percent)), 0, 1)
-	
+		bar.tex:SetTexCoord(0, max(0, min(1, 1 - percent)), 0, 1)
+
 	else
 
 		bar:SetValue(hp)
-		bar.tex:SetTexCoord(0, max(0, percent), 0, 1)
-	
+		bar.tex:SetTexCoord(0, max(0, min(1, percent)), 0, 1)
+
 	end
 
 	XPerl_ColourHealthBar(self, percent)
@@ -3458,6 +3461,8 @@ local hdPortraitModelPatterns = {
 	{pat = "sealion", posZ = -1.05, posY = 0.12, facing = 0.45},
 	{pat = "druidbear", posZ = -1.05, posY = 0.14, facing = 0.44},
 	{pat = "druidcat", posZ = -0.95, posY = 0.12, facing = 0.46},
+	-- Shaman ghost wolf (wolfdraenor)
+	{pat = "wolfdraenor", shapeshiftCrop = true, hdCamera = 0, posZ = -0.92, posY = 0.14, facing = 0.45},
 	{pat = "vulperafemalecreature", shapeshiftCrop = true, hdCamera = 1, posZ = -0.62, posY = 0.07, facing = 0.44},
 	{pat = "vulpera\\female", shapeshiftCrop = true, hdCamera = 1, posZ = -0.62, posY = 0.07, facing = 0.44},
 	{pat = "vulpera\\male", shapeshiftCrop = true, hdCamera = 1, posZ = -0.64, posY = 0.08, facing = 0.45},
@@ -3516,6 +3521,10 @@ local hdPortraitRace = {
 		male = {hdCamera = 0, posZ = -0.52, posY = 0.15, facing = 0.43},
 		female = {hdCamera = 1, posZ = -0.70, posY = 0.09, facing = 0.42},
 	},
+	-- male path only; Sirus gnomemale_hd ignores SetPosition on cam0 — use cam1+posOnly
+	Gnome = {
+		male = {posOnlyFix = true, hdCamera = 1, posZ = -0.52, posY = 0.11, facing = 0.44},
+	},
 }
 
 -- Dracthyr dragon form (character\dracthyr\dragon\...)
@@ -3544,6 +3553,18 @@ local function XPerl_Portrait3D_IsHdModelPath(path)
 	end
 	local lower = strlower(path)
 	return strfind(lower, "_hd%.m2") or strfind(lower, "_hd\\") or strfind(lower, "_hd/")
+end
+
+-- Sirus: gnomemale_hd.m2 portrait cam broken; gnomefemale_hd ok — fix male path only (not UnitRace)
+local function XPerl_Portrait3D_IsGnomeMaleHdPath(path)
+	if (not path) then
+		return false
+	end
+	local lower = strlower(path)
+	if (strfind(lower, "gnome\\female\\") or strfind(lower, "gnome/female/") or strfind(lower, "gnomefemale")) then
+		return false
+	end
+	return strfind(lower, "gnome\\male\\") or strfind(lower, "gnome/male/") or strfind(lower, "gnomemale")
 end
 
 local function XPerl_Portrait3D_IsShapeshiftModel(path)
@@ -3731,7 +3752,101 @@ local function XPerl_Portrait3D_NeedsHdFix(argUnit, path)
 	if (XPerl_Portrait3D_IsDisguise(argUnit, path) and XPerl_Portrait3D_IsHdModelPath(path)) then
 		return true
 	end
+	if (XPerl_Portrait3D_IsGnomeMaleHdPath(path)) then
+		return true
+	end
 	return false
+end
+
+--[[
+Sirus Scourge HD portrait zoom (male + female, same comp — not per-sex posZ):
+
+  Base crop: SetCamera(1) + SetPosition(posY/posZ) in hdPortraitRace.Scourge (cam distance).
+  That posZ often has little effect on Sirus cam1 for scourge*_hd.m2.
+
+  Small unit frame (conf.scale < ref): viewport shrinks but 3D camera stays fixed → helm clips
+  on head-bob anim. Fix: portrait3D:SetScale(comp) where comp = ref / ufScale (cap COMP_MAX).
+  This scales the PlayerModel *frame* up, not the mesh — model draws smaller inside the clip
+  rect (same as pulling the camera back). Do NOT use SetModelScale here (Sirus rotates the model).
+
+  ref was 0.918 → 0.964 (+5%) → 1.012 (+5%) for extra helm clearance.
+]]
+local PORTRAIT3D_SCOURGE_REF_UF_SCALE = 1.012
+local PORTRAIT3D_SCOURGE_COMP_MAX = 1.34
+
+local function XPerl_Portrait3D_IsScourgeUnit(argUnit)
+	if (not argUnit or not UnitExists(argUnit)) then
+		return false
+	end
+	local _, raceFile = UnitRace(argUnit)
+	return raceFile == "Scourge"
+end
+
+local function XPerl_Portrait3D_GetUnitFrameScale(modelFrame)
+	local pf = modelFrame and modelFrame:GetParent()
+	local uf = pf and pf:GetParent()
+	if (uf and uf.conf and uf.conf.scale) then
+		return uf.conf.scale
+	end
+	if (uf and uf.GetScale) then
+		return uf:GetScale() or 1
+	end
+	return 1
+end
+
+local function XPerl_Portrait3D_ClearScourgeFrameComp(modelFrame)
+	if (not modelFrame or not modelFrame.SetScale) then
+		return
+	end
+	if (modelFrame.xperlPortraitComp and modelFrame.xperlPortraitComp ~= 1) then
+		modelFrame:SetScale(1)
+	end
+	modelFrame.xperlPortraitComp = nil
+end
+
+local function XPerl_Portrait3D_ClearHdModelTransform(modelFrame)
+	if (modelFrame.SetPosition) then
+		modelFrame:SetPosition(0, 0, 0)
+	end
+	if (modelFrame.SetFacing) then
+		modelFrame:SetFacing(0)
+	end
+	if (modelFrame.SetRotation) then
+		modelFrame:SetRotation(0)
+	end
+end
+
+local function XPerl_Portrait3D_FinishVanillaPortrait(modelFrame, camera, argUnit, path)
+	if (modelFrame.xperlPortraitHdFix) then
+		XPerl_Portrait3D_ClearHdModelTransform(modelFrame)
+		modelFrame.xperlPortraitHdFix = nil
+	end
+	XPerl_Portrait3D_ClearScourgeFrameComp(modelFrame)
+	if (camera ~= nil and modelFrame.SetCamera) then
+		modelFrame:SetCamera(camera)
+	end
+end
+
+local function XPerl_Portrait3D_ApplyScourgeFrameComp(modelFrame, argUnit)
+	if (not modelFrame or not modelFrame.SetScale) then
+		return
+	end
+	if (not XPerl_Portrait3D_IsScourgeUnit(argUnit)) then
+		XPerl_Portrait3D_ClearScourgeFrameComp(modelFrame)
+		return
+	end
+	local ufScale = XPerl_Portrait3D_GetUnitFrameScale(modelFrame)
+	local comp = 1
+	if (ufScale < PORTRAIT3D_SCOURGE_REF_UF_SCALE - 0.004) then
+		comp = PORTRAIT3D_SCOURGE_REF_UF_SCALE / ufScale
+		if (comp > PORTRAIT3D_SCOURGE_COMP_MAX) then
+			comp = PORTRAIT3D_SCOURGE_COMP_MAX
+		end
+	end
+	if (modelFrame.xperlPortraitComp ~= comp) then
+		modelFrame:SetScale(comp)
+		modelFrame.xperlPortraitComp = comp
+	end
 end
 
 local function XPerl_Portrait3D_GetFixSettings(argUnit, path)
@@ -3880,6 +3995,7 @@ local function XPerl_Portrait3D_ApplyHdFix(modelFrame, argUnit)
 		end
 		applyPosition()
 		applyPosition()
+		modelFrame.xperlPortraitHdFix = true
 		return true
 	end
 
@@ -3894,7 +4010,7 @@ local function XPerl_Portrait3D_ApplyHdFix(modelFrame, argUnit)
 		modelFrame:SetRotation(fix.rotation)
 	end
 	applyPosition()
-	if (not fix.posOnlyFix and not fix.shapeshiftCrop and not fix.dracthyrDragon) then
+	if (not fix.posOnlyFix and not fix.shapeshiftCrop and not fix.dracthyrDragon and fix.hdCamera ~= 0) then
 		if (fix.camDistanceScale) then
 			XPerl_Portrait3D_SafeMethod(modelFrame, "SetCamDistanceScale", fix.camDistanceScale)
 		end
@@ -3902,59 +4018,43 @@ local function XPerl_Portrait3D_ApplyHdFix(modelFrame, argUnit)
 			XPerl_Portrait3D_SafeMethod(modelFrame, "SetPortraitZoom", fix.portraitZoom)
 		end
 	end
+	applyPosition()
+	if (XPerl_Portrait3D_IsScourgeUnit(argUnit)) then
+		XPerl_Portrait3D_ApplyScourgeFrameComp(modelFrame, argUnit)
+	end
+	modelFrame.xperlPortraitHdFix = true
 
 	return true
 end
 
-local function XPerl_Portrait3D_AfterModelLoad(modelFrame, argUnit)
-	XPerl_Portrait3D_ApplyHdFix(modelFrame, argUnit)
-end
-
 local function XPerl_Portrait3D_ScheduleAfterLoad(modelFrame, argUnit, camera)
-	local state = {waited = 0, tries = 0, phase = "load"}
+	local tries = 0
 
-	modelFrame:SetScript("OnUpdate", function(mf, elapsed)
-		state.waited = state.waited + elapsed
+	modelFrame:SetScript("OnUpdate", function(mf)
+		tries = tries + 1
 
-		if (state.phase == "load") then
-			if (state.waited < 0.05) then
-				return
-			end
-			state.waited = 0
-			state.tries = state.tries + 1
-
-			local path = XPerl_Portrait3D_GetModelPath(mf)
-			if (not path and state.tries < 30) then
-				return
-			end
-
-			if (not XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
-				if (path and mf.SetCamera) then
-					mf:SetCamera(camera)
-				end
-				mf:SetScript("OnUpdate", nil)
-				return
-			end
-
-			XPerl_Portrait3D_AfterModelLoad(mf, argUnit)
-
-			state.phase = "refix"
-			state.waited = 0
+		local path = XPerl_Portrait3D_GetModelPath(mf)
+		if (not path and tries < 30) then
 			return
 		end
 
-		if (state.phase == "refix") then
-			if (state.waited < 0.25) then
-				return
-			end
-			mf:SetScript("OnUpdate", nil)
-			XPerl_Portrait3D_AfterModelLoad(mf, argUnit)
+		mf:SetScript("OnUpdate", nil)
+
+		if (XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
+			XPerl_Portrait3D_ApplyHdFix(mf, argUnit)
+		else
+			XPerl_Portrait3D_FinishVanillaPortrait(mf, camera, argUnit, path)
 		end
 	end)
 end
 
 -- PerlSetPortrait3D
 local function XPerlSetPortrait3D(self, argUnit)
+	if (not argUnit or not UnitExists(argUnit)) then
+		return
+	end
+
+	self:SetScript("OnUpdate", nil)
 	self:ClearModel()
 	self:SetUnit(argUnit)
 
@@ -3966,14 +4066,14 @@ local function XPerlSetPortrait3D(self, argUnit)
 			camera = fix.hdCamera
 		end
 	end
-	if (path) then
+	if (self.SetCamera) then
 		self:SetCamera(camera)
-		if (XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
-			XPerl_Portrait3D_ApplyHdFix(self, argUnit)
-		end
 	end
-
-	XPerl_Portrait3D_ScheduleAfterLoad(self, argUnit, camera)
+	if (path and not XPerl_Portrait3D_NeedsHdFix(argUnit, path)) then
+		XPerl_Portrait3D_FinishVanillaPortrait(self, camera, argUnit, path)
+	else
+		XPerl_Portrait3D_ScheduleAfterLoad(self, argUnit, camera)
+	end
 end
 
 -- XPerl_Unit_UpdatePortrait()
