@@ -832,7 +832,7 @@ XPERL_CONF_HIDENDEBUFFS_TOT				= "Цель цели"
 XPERL_CONF_HIDENDEBUFFS_FOCUS			= "Фокус"
 XPERL_CONF_HIDENDEBUFFS_FOT				= "Цель фокуса"
 XPERL_CONF_HIDENDEBUFFS_ADD				= "Добавить"
-XPERL_CONF_HIDENDEBUFFS_HINT				= "Ctrl+Shift+ЛКМ по дебаффу при открытых настройках — добавить в список"
+XPERL_CONF_HIDENDEBUFFS_HINT				= "Ctrl+Shift+ЛКМ по дебаффу при открытых настройках, либо ID / ссылка заклинания"
 XPERL_CONF_HIDENDEBUFFS_ADDED			= "|cFF33FF33[XPerl]|r Скрыт дебафф: %s"
 
 XPERL_CONF_GLOBAL_BORDERS				= EMBLEM_BORDER	-- "Края"		Generic WoW lozalization

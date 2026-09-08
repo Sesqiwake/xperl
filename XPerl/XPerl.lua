@@ -1973,30 +1973,35 @@ local RaidFrameIgnores = {
 }
 
 -- BuffException
+-- Returns: name, rank, buff, count, debuffType, dur, max, isMine, isStealable, index[, spellId]
+-- spellId is the 11th UnitAura/UnitDebuff return when the client provides it (same call as name).
 local showInfo
 local function BuffException(unit, index, flag, func, exceptions, raidFrames)
-	local name, rank, buff, count, debuffType, dur, max, isMine, isStealable
+	local name, rank, buff, count, debuffType, dur, max, isMine, isStealable, spellId
 	if (flag ~= "RAID") then
 		-- Not filtered, just return it
-		name, rank, buff, count, debuffType, dur, max, isMine, isStealable = func(unit, index)
-		return name, rank, buff, count, debuffType, dur, max, isMine, isStealable, index
+		name, rank, buff, count, debuffType, dur, max, isMine, isStealable, _, spellId = func(unit, index)
+		return name, rank, buff, count, debuffType, dur, max, isMine, isStealable, index, spellId
 	end
 
-	name, rank, buff, count, debuffType, dur, max, isMine, isStealable = func(unit, index, "RAID")
+	name, rank, buff, count, debuffType, dur, max, isMine, isStealable, _, spellId = func(unit, index, "RAID")
 	if (buff) then
 		-- We need the index of the buff unfiltered later for tooltips
 		for i = 1,1000 do
-			local name1, rank1, buff1, count1, debuffType1, dur1, max1, isMine1, isStealable1 = func(unit, i)
+			local name1, rank1, buff1, count1, debuffType1, dur1, max1, isMine1, isStealable1, _, spellId1 = func(unit, i)
 			if (not name1) then
 				break
 			end
 			if (name == name1 and rank == rank1 and buff == buff1 and count == count1 and isMine == isMine1) then
 				index = i
+				if (spellId1) then
+					spellId = spellId1
+				end
 				break
 			end
 		end
 
-		return name, rank, buff, count, debuffType, dur, max, isMine, isStealable, index
+		return name, rank, buff, count, debuffType, dur, max, isMine, isStealable, index, spellId
 	end
 
 	-- See how many filtered buffs WoW has returned by default
@@ -2015,7 +2020,7 @@ local function BuffException(unit, index, flag, func, exceptions, raidFrames)
 	local classExceptions = exceptions[playerClass]
 	local allExceptions = exceptions.ALL
 	for i = 1,1000 do
-		name, rank, buff, count, debuffType, dur, max, isMine, isStealable = func(unit, i)
+		name, rank, buff, count, debuffType, dur, max, isMine, isStealable, _, spellId = func(unit, i)
 		if (not name) then
 			break
 		end
@@ -2040,7 +2045,7 @@ local function BuffException(unit, index, flag, func, exceptions, raidFrames)
 		if (good) then
 			foundValid = foundValid + 1
 			if (foundValid + normalBuffFilterCount == index) then
-				return name, rank, buff, count, debuffType, dur, max, isMine, isStealable, i
+				return name, rank, buff, count, debuffType, dur, max, isMine, isStealable, i, spellId
 			end
 		end
 	end
@@ -2048,17 +2053,17 @@ end
 
 -- DebuffException
 local function DebuffException(unit, start, flag, func, raidFrames)
-	local name, rank, buff, count, debuffType, dur, max, caster, isStealable, index
+	local name, rank, buff, count, debuffType, dur, max, caster, isStealable, index, spellId
 	local valid = 0
 	for i = 1,1000 do
-		name, rank, buff, count, debuffType, dur, max, caster, isStealable, index = BuffException(unit, i, flag, func, DebuffExceptions, raidFrames)
+		name, rank, buff, count, debuffType, dur, max, caster, isStealable, index, spellId = BuffException(unit, i, flag, func, DebuffExceptions, raidFrames)
 		if (not name) then
 			break
 		end
 		if (not SeasonalDebuffs[name] and not (raidFrames and RaidFrameIgnores[name])) then
 			valid = valid + 1
 			if (valid == start) then
-				return name, rank, buff, count, debuffType, dur, max, caster, isStealable, index
+				return name, rank, buff, count, debuffType, dur, max, caster, isStealable, index, spellId
 			end
 		end
 	end
@@ -3117,7 +3122,7 @@ function XPerl_Unit_UpdateBuffs(self, maxBuffs, maxDebuffs, castableOnly, curabl
 
 				for buffnum = 1,maxDebuffs do
 					local filter = (isFriendly and curableOnly == 1 or castableOnly == 1) and "RAID" or nil
-					local name, rank, debuff, debuffApplications, debuffType, duration, endTime, isMine, isStealable = XPerl_UnitDebuff(partyid, buffnum, filter)
+					local name, rank, debuff, debuffApplications, debuffType, duration, endTime, isMine, isStealable, auraIndex, spellId = XPerl_UnitDebuff(partyid, buffnum, filter)
 					if (not name) then
 						if (mine == 1) then
 							maxDebuffs = buffnum - 1
@@ -3131,10 +3136,11 @@ function XPerl_Unit_UpdateBuffs(self, maxBuffs, maxDebuffs, castableOnly, curabl
 						isMine = isMine == "player"
 					end
 
-					if (debuff and (((mine == 1) and isMine) or ((mine == 2) and not isMine)) and not (XPerl_HiddenDebuffs_ShouldHide and XPerl_HiddenDebuffs_ShouldHide(self, name))) then
+					if (debuff and (((mine == 1) and isMine) or ((mine == 2) and not isMine)) and not (XPerl_HiddenDebuffs_ShouldHide and XPerl_HiddenDebuffs_ShouldHide(self, name, spellId))) then
 						local button = XPerl_GetBuffButton(self, buffIconIndex, 1, true, buffnum)
 						button.filter = filter
 						button.debuffName = name
+						button.debuffSpellId = spellId
 						button:SetAlpha(1)
 
 						debuffs = debuffs + 1

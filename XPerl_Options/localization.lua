@@ -833,7 +833,7 @@ XPERL_CONF_HIDENDEBUFFS_TOT				= "ToT"
 XPERL_CONF_HIDENDEBUFFS_FOCUS			= "Focus"
 XPERL_CONF_HIDENDEBUFFS_FOT				= "FoT"
 XPERL_CONF_HIDENDEBUFFS_ADD				= "Add"
-XPERL_CONF_HIDENDEBUFFS_HINT				= "Ctrl+Shift+LMB on a debuff while options are open adds it to the list"
+XPERL_CONF_HIDENDEBUFFS_HINT				= "Ctrl+Shift+LMB on a debuff while options are open, or enter a spell ID / link"
 XPERL_CONF_HIDENDEBUFFS_ADDED			= "|cFF33FF33[XPerl]|r Hidden debuff: %s"
 
 XPERL_CONF_GLOBAL_BORDERS				= EMBLEM_BORDER	-- "Borders"		Generic WoW lozalization

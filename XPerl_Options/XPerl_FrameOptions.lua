@@ -3204,7 +3204,7 @@ function XPerl_Options_HiddenDebuffs_FillList()
 	if (not XPerl_HiddenDebuffs_GetSortedList) then
 		return
 	end
-	local names = XPerl_HiddenDebuffs_GetSortedList()
+	local rows = XPerl_HiddenDebuffs_GetSortedList()
 	local scroll = _G[HIDENDEBUFF_SCROLLBAR]
 	local offset = 0
 	if (scroll) then
@@ -3213,23 +3213,25 @@ function XPerl_Options_HiddenDebuffs_FillList()
 	for i = 1, HIDENDEBUFF_LIST_ROWS do
 		local row = HiddenDebuffGetRow(i)
 		if (row) then
-			local name = names[offset + i]
-			if (name) then
+			local entry = rows[offset + i]
+			if (entry) then
 				row:Show()
 				if (row.nameText) then
-					row.nameText:SetText(name)
+					row.nameText:SetText(entry.name)
 				end
-				row.spellName = name
+				row.spellKey = entry.key
+				row.spellName = entry.name
 			else
 				row:Hide()
+				row.spellKey = nil
 				row.spellName = nil
 			end
 		end
 	end
 	if (scroll) then
-		FauxScrollFrame_Update(scroll, #names, HIDENDEBUFF_LIST_ROWS, HIDENDEBUFF_ROW_HEIGHT)
+		FauxScrollFrame_Update(scroll, #rows, HIDENDEBUFF_LIST_ROWS, HIDENDEBUFF_ROW_HEIGHT)
 		if (scroll.bar) then
-			if (#names > HIDENDEBUFF_LIST_ROWS) then
+			if (#rows > HIDENDEBUFF_LIST_ROWS) then
 				scroll.bar:Show()
 			else
 				scroll.bar:Hide()
@@ -3256,17 +3258,20 @@ function XPerl_Options_HiddenDebuffs_AddManual(editBox)
 	if (not editBox or not XPerl_HiddenDebuffs_Add) then
 		return
 	end
-	local name = HiddenDebuffTrim(editBox:GetText())
-	if (name == "") then
+	local text = HiddenDebuffTrim(editBox:GetText())
+	if (text == "") then
 		return
 	end
-	if (XPerl_HiddenDebuffs_Add(name)) then
+	if (XPerl_HiddenDebuffs_Add(text)) then
 		editBox:SetText("")
 	end
 end
 
 function XPerl_Options_HiddenDebuffs_RemoveRow(row)
-	if (row and row.spellName and XPerl_HiddenDebuffs_Remove) then
-		XPerl_HiddenDebuffs_Remove(row.spellName)
+	if (row and XPerl_HiddenDebuffs_Remove) then
+		local key = row.spellKey or row.spellName
+		if (key ~= nil) then
+			XPerl_HiddenDebuffs_Remove(key)
+		end
 	end
 end
