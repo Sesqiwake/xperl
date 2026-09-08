@@ -1,4 +1,4 @@
--- Hidden debuffs on unit frames (blacklist by spell ID; UI shows names)
+-- Hidden buffs/debuffs on unit frames (blacklist by spell ID; UI shows names)
 
 local format = format
 local tinsert = tinsert
@@ -10,11 +10,17 @@ local pairs = pairs
 local wipe = wipe
 local strmatch = strmatch
 local GetSpellInfo = GetSpellInfo
+local UnitBuff = UnitBuff
 local UnitDebuff = UnitDebuff
 local UnitAura = UnitAura
 local strtrim = strtrim or function(s)
 	return (tostring(s or ""):gsub("^%s+", ""):gsub("%s+$", ""))
 end
+
+local conf
+XPerl_RequestConfig(function(new)
+	conf = new
+end, "$Revision: 401 $")
 
 local FRAME_KEYS = {
 	XPerl_Player = "player",
@@ -24,36 +30,58 @@ local FRAME_KEYS = {
 	XPerl_FocusTarget = "focustarget",
 }
 
--- name -> true for numeric IDs in list (fast ShouldHide when aura has no spellId)
-local nameLookup = {}
+-- Per-list name lookups (legacy names + GetSpellInfo mirrors for ID keys)
+local nameLookupBuffs = {}
+local nameLookupDebuffs = {}
 local nameLookupDirty = true
-local nameLookupForList
+local nameLookupForBuffs
+local nameLookupForDebuffs
 
-local function RebuildNameLookup(cfg)
-	wipe(nameLookup)
-	nameLookupForList = cfg and cfg.list
-	if (not cfg or not cfg.list) then
-		nameLookupDirty = false
+local function RebuildOneLookup(dest, list)
+	wipe(dest)
+	if (not list) then
 		return
 	end
-	for key in pairs(cfg.list) do
+	for key in pairs(list) do
 		if (type(key) == "number") then
 			local name = GetSpellInfo(key)
 			if (name and name ~= "") then
-				nameLookup[name] = true
+				dest[name] = true
 			end
 		elseif (type(key) == "string" and key ~= "") then
-			-- legacy name-keyed entries from older configs
-			nameLookup[key] = true
+			dest[key] = true
 		end
 	end
+end
+
+local function RebuildNameLookups(cfg)
+	RebuildOneLookup(nameLookupBuffs, cfg and cfg.buffs)
+	RebuildOneLookup(nameLookupDebuffs, cfg and cfg.debuffs)
+	nameLookupForBuffs = cfg and cfg.buffs
+	nameLookupForDebuffs = cfg and cfg.debuffs
 	nameLookupDirty = false
 end
 
-local function EnsureNameLookup(cfg)
-	if (nameLookupDirty or nameLookupForList ~= (cfg and cfg.list)) then
-		RebuildNameLookup(cfg)
+local function EnsureNameLookups(cfg)
+	if (nameLookupDirty
+		or nameLookupForBuffs ~= (cfg and cfg.buffs)
+		or nameLookupForDebuffs ~= (cfg and cfg.debuffs)) then
+		RebuildNameLookups(cfg)
 	end
+end
+
+local function GetAuraList(cfg, isDebuff)
+	if (isDebuff) then
+		return cfg.debuffs
+	end
+	return cfg.buffs
+end
+
+local function GetNameLookup(isDebuff)
+	if (isDebuff) then
+		return nameLookupDebuffs
+	end
+	return nameLookupBuffs
 end
 
 function XPerl_HiddenDebuffs_Defaults()
@@ -65,7 +93,8 @@ function XPerl_HiddenDebuffs_Defaults()
 		targettarget = true,
 		focus = true,
 		focustarget = true,
-		list = {},
+		buffs = {},
+		debuffs = {},
 	}
 end
 
@@ -78,11 +107,25 @@ function XPerl_HiddenDebuffs_EnsureConfig(db)
 		nameLookupDirty = true
 	end
 	local cfg = db.hiddenDebuffs
-	if (not cfg.list) then
-		cfg.list = {}
+	if (not cfg.buffs) then
+		cfg.buffs = {}
 		nameLookupDirty = true
 	end
-	EnsureNameLookup(cfg)
+	if (not cfg.debuffs) then
+		cfg.debuffs = {}
+		nameLookupDirty = true
+	end
+	-- Migrate legacy single list -> debuffs
+	if (cfg.list) then
+		for key, val in pairs(cfg.list) do
+			if (val and cfg.debuffs[key] == nil) then
+				cfg.debuffs[key] = true
+			end
+		end
+		cfg.list = nil
+		nameLookupDirty = true
+	end
+	EnsureNameLookups(cfg)
 	return cfg
 end
 
@@ -99,19 +142,24 @@ function XPerl_HiddenDebuffs_GetFrameKey(unitFrame)
 	end
 end
 
--- Resolve spellId from UnitDebuff / UnitAura (11th return on Sirus / later clients).
-function XPerl_HiddenDebuffs_GetAuraSpellId(unit, index, filter)
+-- Resolve spellId from UnitBuff/UnitDebuff/UnitAura (11th return when client provides it).
+function XPerl_HiddenDebuffs_GetAuraSpellId(unit, index, filter, isDebuff)
 	if (not unit or not index or index < 1) then
 		return
 	end
-	local id = select(11, UnitDebuff(unit, index, filter))
+	local id
+	if (isDebuff) then
+		id = select(11, UnitDebuff(unit, index, filter))
+	else
+		id = select(11, UnitBuff(unit, index, filter))
+	end
 	if (type(id) == "number" and id > 0) then
 		return id
 	end
 	if (UnitAura) then
-		local auraFilter = "HARMFUL"
+		local auraFilter = isDebuff and "HARMFUL" or "HELPFUL"
 		if (filter and filter ~= "") then
-			auraFilter = "HARMFUL|"..filter
+			auraFilter = auraFilter.."|"..filter
 		end
 		id = select(11, UnitAura(unit, index, auraFilter))
 		if (type(id) == "number" and id > 0) then
@@ -149,7 +197,8 @@ function XPerl_HiddenDebuffs_DisplayName(spellId, fallbackName)
 	return fallbackName or "?"
 end
 
-function XPerl_HiddenDebuffs_ShouldHide(unitFrame, debuffName, spellId)
+-- isDebuff: true = debuff list, false = buff list
+function XPerl_HiddenDebuffs_ShouldHide(unitFrame, auraName, spellId, isDebuff)
 	if (not XPerlDB) then
 		return false
 	end
@@ -164,23 +213,25 @@ function XPerl_HiddenDebuffs_ShouldHide(unitFrame, debuffName, spellId)
 		return false
 	end
 
-	if (type(spellId) == "number" and spellId > 0 and cfg.list[spellId]) then
+	local list = GetAuraList(cfg, isDebuff)
+	if (type(spellId) == "number" and spellId > 0 and list[spellId]) then
 		return true
 	end
 
-	-- Legacy name keys, or ID list mirrored into nameLookup for clients without aura spellId
-	if (debuffName and debuffName ~= "" and nameLookup[debuffName]) then
+	local lookup = GetNameLookup(isDebuff)
+	if (auraName and auraName ~= "" and lookup[auraName]) then
 		return true
 	end
 
 	return false
 end
 
--- Sorted rows for UI: { key = spellId|legacyName, name = displayName }
-function XPerl_HiddenDebuffs_GetSortedList()
+-- Sorted rows for UI: { key, name }
+function XPerl_HiddenDebuffs_GetSortedList(isDebuff)
 	local cfg = XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
+	local list = GetAuraList(cfg, isDebuff)
 	local rows = {}
-	for key in pairs(cfg.list) do
+	for key in pairs(list) do
 		if ((type(key) == "number" and key > 0) or (type(key) == "string" and key ~= "")) then
 			tinsert(rows, {
 				key = key,
@@ -197,7 +248,12 @@ function XPerl_HiddenDebuffs_GetSortedList()
 	return rows
 end
 
-function XPerl_HiddenDebuffs_Add(spellIdOrText, displayName)
+-- isDebuff defaults to true for manual add (legacy)
+function XPerl_HiddenDebuffs_Add(spellIdOrText, displayName, isDebuff)
+	if (isDebuff == nil) then
+		isDebuff = true
+	end
+
 	local spellId = spellIdOrText
 	if (type(spellId) ~= "number") then
 		spellId = XPerl_HiddenDebuffs_ParseInput(spellIdOrText)
@@ -208,19 +264,25 @@ function XPerl_HiddenDebuffs_Add(spellIdOrText, displayName)
 	spellId = tonumber(spellId)
 
 	local cfg = XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
-	if (cfg.list[spellId]) then
+	local list = GetAuraList(cfg, isDebuff)
+	if (list[spellId]) then
 		return false
 	end
-	cfg.list[spellId] = true
+	list[spellId] = true
 	nameLookupDirty = true
-	RebuildNameLookup(cfg)
+	RebuildNameLookups(cfg)
 
 	local shown = XPerl_HiddenDebuffs_DisplayName(spellId, displayName)
-	local msg = _G.XPERL_CONF_HIDENDEBUFFS_ADDED
+	local msg
+	if (isDebuff) then
+		msg = _G.XPERL_CONF_HIDENDEBUFFS_ADDED
+	else
+		msg = _G.XPERL_CONF_HIDENDEBUFFS_ADDED_BUFF
+	end
 	if (msg) then
 		DEFAULT_CHAT_FRAME:AddMessage(format(msg, shown), 0.3, 1, 0.3)
 	else
-		DEFAULT_CHAT_FRAME:AddMessage(format("[XPerl] Hidden debuff: %s", shown), 0.3, 1, 0.3)
+		DEFAULT_CHAT_FRAME:AddMessage(format("[XPerl] Hidden %s: %s", isDebuff and "debuff" or "buff", shown), 0.3, 1, 0.3)
 	end
 
 	if (XPerl_Options_HiddenDebuffs_FillList) then
@@ -231,9 +293,12 @@ function XPerl_HiddenDebuffs_Add(spellIdOrText, displayName)
 	return true
 end
 
-function XPerl_HiddenDebuffs_Remove(key)
+function XPerl_HiddenDebuffs_Remove(key, isDebuff)
 	if (key == nil or key == "") then
 		return false
+	end
+	if (isDebuff == nil) then
+		isDebuff = true
 	end
 	if (type(key) == "string") then
 		local asId = tonumber(key)
@@ -243,13 +308,14 @@ function XPerl_HiddenDebuffs_Remove(key)
 	end
 
 	local cfg = XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
-	if (not cfg.list[key]) then
+	local list = GetAuraList(cfg, isDebuff)
+	if (not list[key]) then
 		return false
 	end
 
-	cfg.list[key] = nil
+	list[key] = nil
 	nameLookupDirty = true
-	RebuildNameLookup(cfg)
+	RebuildNameLookups(cfg)
 
 	if (XPerl_Options_HiddenDebuffs_FillList) then
 		XPerl_Options_HiddenDebuffs_FillList()
@@ -278,6 +344,27 @@ function XPerl_HiddenDebuffs_RefreshUnitFrame(unitFrame)
 	end
 
 	if (not unitFrame.buffFrame) then
+		return
+	end
+
+	-- Player buffs use XPerl_PlayerBuffs counts/cooldown override
+	if (unitFrame == XPerl_Player and XPerlDB and XPerlDB.player and XPerlDB.player.buffs and XPerlDB.player.buffs.enable) then
+		local pconf = XPerlDB.player
+		local a = conf and conf.buffs and conf.buffs.cooldown
+		if (conf and conf.buffs) then
+			conf.buffs.cooldown = pconf.buffs.cooldown
+		end
+		if (pconf.buffs.wrap) then
+			XPerl_Unit_UpdateBuffs(unitFrame, nil, nil, 0, 0)
+		else
+			XPerl_Unit_UpdateBuffs(unitFrame, pconf.buffs.count, pconf.buffs.count, 0, 0)
+		end
+		if (conf and conf.buffs and a ~= nil) then
+			conf.buffs.cooldown = a
+		end
+		if (XPerl_Player_Buffs_Position) then
+			XPerl_Player_Buffs_Position(unitFrame)
+		end
 		return
 	end
 
@@ -311,6 +398,20 @@ function XPerl_HiddenDebuffs_OnOptionClick(checkbox)
 	XPerl_HiddenDebuffs_RefreshAll()
 end
 
+local function HiddenDebuffsFindUnitFrame(button)
+	if (button.xperlUnitFrame and button.xperlUnitFrame.partyid) then
+		return button.xperlUnitFrame
+	end
+	-- Player debuffs sit on debuffFrame under buffFrame; walk up until partyid
+	local f = button:GetParent()
+	while (f) do
+		if (f.partyid) then
+			return f
+		end
+		f = f:GetParent()
+	end
+end
+
 function XPerl_HiddenDebuffs_HandleClick(button, mouseButton)
 	if (mouseButton ~= "LeftButton") then
 		return false
@@ -322,35 +423,34 @@ function XPerl_HiddenDebuffs_HandleClick(button, mouseButton)
 		return false
 	end
 
-	local debuffFrame = button:GetParent()
-	if (not debuffFrame) then
-		return false
-	end
-
-	local unitFrame = debuffFrame:GetParent()
+	local unitFrame = HiddenDebuffsFindUnitFrame(button)
 	if (not unitFrame or not unitFrame.partyid) then
 		return false
 	end
 
+	local isDebuff = button.xperlIsDebuff and true or false
 	local partyid = unitFrame.partyid
 	local index = button:GetID()
 	local filter = button.filter
-	local name = button.debuffName
-	local spellId = button.debuffSpellId
+	local name = isDebuff and button.debuffName or button.buffName
+	local spellId = isDebuff and button.debuffSpellId or button.buffSpellId
 
-	-- Fallback only if the icon was drawn without spellId (old client / rare path)
 	if ((not spellId or spellId <= 0) and index and index >= 1) then
-		spellId = XPerl_HiddenDebuffs_GetAuraSpellId(partyid, index, filter)
+		spellId = XPerl_HiddenDebuffs_GetAuraSpellId(partyid, index, filter, isDebuff)
 	end
-	if (not name and index and index >= 1 and XPerl_UnitDebuff) then
-		name = XPerl_UnitDebuff(partyid, index, filter)
+	if (not name and index and index >= 1) then
+		if (isDebuff and XPerl_UnitDebuff) then
+			name = XPerl_UnitDebuff(partyid, index, filter)
+		elseif ((not isDebuff) and XPerl_UnitBuff) then
+			name = XPerl_UnitBuff(partyid, index, filter)
+		end
 	end
 
 	if (not spellId or spellId <= 0) then
 		return true
 	end
 
-	if (XPerl_HiddenDebuffs_Add(spellId, name)) then
+	if (XPerl_HiddenDebuffs_Add(spellId, name, isDebuff)) then
 		XPerl_HiddenDebuffs_RefreshUnitFrame(unitFrame)
 	end
 

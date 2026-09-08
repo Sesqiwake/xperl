@@ -2569,6 +2569,9 @@ function XPerl_GetBuffButton(self, buffnum, debuff, createIfAbsent, newID)
 		button = CreateFrame("Button", "XPerlBuff"..buffIconCount, parent, format("XPerl_Cooldown_%sTemplate", buffType))
 		button:Hide()
 		--button.cooldown.noCooldownCount = true				-- OmniCC to NOT show cooldown
+		if (button.cooldown) then
+			button.cooldown:EnableMouse(false)
+		end
 
 		if (setup.rightClickable) then
 			button:RegisterForClicks("RightButtonUp")
@@ -2592,10 +2595,14 @@ function XPerl_GetBuffButton(self, buffnum, debuff, createIfAbsent, newID)
 			for k,v in pairs (setup.debuffScripts) do
 				button:SetScript(k, v)
 			end
-			button:RegisterForClicks("LeftButtonUp")
+			button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+			local prevClick = button:GetScript("OnClick")
 			button:SetScript("OnClick", function(btn, mouseButton)
 				if (XPerl_HiddenDebuffs_HandleClick and XPerl_HiddenDebuffs_HandleClick(btn, mouseButton)) then
 					return
+				end
+				if (prevClick) then
+					prevClick(btn, mouseButton)
 				end
 			end)
 		else
@@ -2604,6 +2611,16 @@ function XPerl_GetBuffButton(self, buffnum, debuff, createIfAbsent, newID)
 			for k,v in pairs (setup.buffScripts) do
 				button:SetScript(k, v)
 			end
+			button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+			local prevClick = button:GetScript("OnClick")
+			button:SetScript("OnClick", function(btn, mouseButton)
+				if (XPerl_HiddenDebuffs_HandleClick and XPerl_HiddenDebuffs_HandleClick(btn, mouseButton)) then
+					return
+				end
+				if (prevClick) then
+					prevClick(btn, mouseButton)
+				end
+			end)
 		end
 		buffList[buffnum] = button
 
@@ -3009,7 +3026,7 @@ function XPerl_Unit_UpdateBuffs(self, maxBuffs, maxDebuffs, castableOnly, curabl
 				-- our own buffs.
 				for buffnum = 1,maxBuffs do
 					local filter = castableOnly == 1 and "RAID" or nil
-					local name, rank, buff, count, _, duration, endTime, isMine, isStealable = XPerl_UnitBuff(partyid, buffnum, filter)
+					local name, rank, buff, count, _, duration, endTime, isMine, isStealable, auraIndex, spellId = XPerl_UnitBuff(partyid, buffnum, filter)
 					if (not name) then
 						if (mine == 1) then
 							maxBuffs = buffnum - 1
@@ -3022,9 +3039,13 @@ function XPerl_Unit_UpdateBuffs(self, maxBuffs, maxDebuffs, castableOnly, curabl
 						isMine = isMine == "player" or isMine == "vehicle"
 					end
 
-					if (buff and (((mine == 1) and (isMine or isStealable)) or ((mine == 2) and not (isMine or isStealable)))) then
+					if (buff and (((mine == 1) and (isMine or isStealable)) or ((mine == 2) and not (isMine or isStealable))) and not (XPerl_HiddenDebuffs_ShouldHide and XPerl_HiddenDebuffs_ShouldHide(self, name, spellId, false))) then
 						local button = XPerl_GetBuffButton(self, buffIconIndex, 0, true, buffnum)
 						button.filter = filter
+						button.buffName = name
+						button.buffSpellId = spellId
+						button.xperlIsDebuff = false
+						button.xperlUnitFrame = self
 						button:SetAlpha(1)
 
 						buffs = buffs + 1
@@ -3136,11 +3157,13 @@ function XPerl_Unit_UpdateBuffs(self, maxBuffs, maxDebuffs, castableOnly, curabl
 						isMine = isMine == "player"
 					end
 
-					if (debuff and (((mine == 1) and isMine) or ((mine == 2) and not isMine)) and not (XPerl_HiddenDebuffs_ShouldHide and XPerl_HiddenDebuffs_ShouldHide(self, name, spellId))) then
+					if (debuff and (((mine == 1) and isMine) or ((mine == 2) and not isMine)) and not (XPerl_HiddenDebuffs_ShouldHide and XPerl_HiddenDebuffs_ShouldHide(self, name, spellId, true))) then
 						local button = XPerl_GetBuffButton(self, buffIconIndex, 1, true, buffnum)
 						button.filter = filter
 						button.debuffName = name
 						button.debuffSpellId = spellId
+						button.xperlIsDebuff = true
+						button.xperlUnitFrame = self
 						button:SetAlpha(1)
 
 						debuffs = debuffs + 1

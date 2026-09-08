@@ -1698,13 +1698,13 @@
 		<HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
 	</Button>
 
-	<Frame name="XPerlHiddenDebuffRowTemplate" virtual="true">
+	<Frame name="XPerlHiddenDebuffRowTemplate" virtual="true" enableMouse="true">
 		<Size>
 			<AbsDimension x="1" y="14"/>
 		</Size>
 		<Frames>
 			<Button name="$parent_Remove" inherits="UIPanelButtonTemplate" text="x">
-				<Size><AbsDimension x="18" y="14"/></Size>
+				<Size><AbsDimension x="16" y="14"/></Size>
 				<Anchors>
 					<Anchor point="RIGHT">
 						<Offset><AbsDimension x="-2" y="0"/></Offset>
@@ -1719,10 +1719,11 @@
 		</Frames>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="$parentName" inherits="GameFontHighlightSmall" justifyH="LEFT">
-					<Size><AbsDimension x="160" y="12"/></Size>
+				<FontString name="$parentName" inherits="GameFontHighlightSmall" justifyH="LEFT" nonspacewrap="false">
 					<Anchors>
-						<Anchor point="LEFT"/>
+						<Anchor point="LEFT">
+							<Offset><AbsDimension x="2" y="0"/></Offset>
+						</Anchor>
 						<Anchor point="RIGHT" relativeTo="$parent_Remove" relativePoint="LEFT">
 							<Offset><AbsDimension x="-2" y="0"/></Offset>
 						</Anchor>
@@ -1734,6 +1735,16 @@
 			<OnLoad>
 				self.nameText = _G[self:GetName().."Name"]
 			</OnLoad>
+			<OnEnter>
+				if (self.spellName and self.spellName ~= "") then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					GameTooltip:SetText(self.spellName, 1, 1, 1, 1, true)
+					GameTooltip:Show()
+				end
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide()
+			</OnLeave>
 		</Scripts>
 	</Frame>
 
@@ -12351,20 +12362,15 @@
 												</Anchors>
 											</EditBox>
 											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_HintArea">
-												<Size><AbsDimension x="1" y="14"/></Size>
+												<Size><AbsDimension x="1" y="12"/></Size>
 												<Anchors>
 													<Anchor point="BOTTOMLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_AddEdit" relativePoint="TOPLEFT">
-														<Offset><AbsDimension x="0" y="2"/></Offset>
+														<Offset><AbsDimension x="0" y="1"/></Offset>
 													</Anchor>
 													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
 														<Offset><AbsDimension x="-2" y="0"/></Offset>
 													</Anchor>
 												</Anchors>
-												<Scripts>
-													<OnLoad>
-														self:SetFrameLevel(self:GetParent():GetFrameLevel() + 5)
-													</OnLoad>
-												</Scripts>
 												<Layers>
 													<Layer level="ARTWORK">
 														<FontString inherits="GameFontDisableSmall" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS_HINT">
@@ -12376,13 +12382,48 @@
 													</Layer>
 												</Layers>
 											</Frame>
-											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List">
+											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_ColHeaders">
+												<Size><AbsDimension x="1" y="12"/></Size>
 												<Anchors>
 													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Player" relativePoint="BOTTOMLEFT">
-														<Offset><AbsDimension x="0" y="-2"/></Offset>
+														<Offset><AbsDimension x="0" y="-1"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<FontString name="XPerl_Options_Profiles_HiddenDebuffs_BuffsHeader" inherits="GameFontNormalSmall" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS_BUFFS">
+															<Anchors>
+																<Anchor point="TOPLEFT">
+																	<Offset><AbsDimension x="6" y="0"/></Offset>
+																</Anchor>
+																<Anchor point="TOPRIGHT" relativePoint="TOP">
+																	<Offset><AbsDimension x="-4" y="0"/></Offset>
+																</Anchor>
+															</Anchors>
+														</FontString>
+														<FontString name="XPerl_Options_Profiles_HiddenDebuffs_DebuffsHeader" inherits="GameFontNormalSmall" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS_DEBUFFS">
+															<Anchors>
+																<Anchor point="TOPLEFT" relativePoint="TOP">
+																	<Offset><AbsDimension x="6" y="0"/></Offset>
+																</Anchor>
+																<Anchor point="TOPRIGHT">
+																	<Offset><AbsDimension x="-6" y="0"/></Offset>
+																</Anchor>
+															</Anchors>
+														</FontString>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_ColHeaders" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-1"/></Offset>
 													</Anchor>
 													<Anchor point="BOTTOMLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_HintArea" relativePoint="TOPLEFT">
-														<Offset><AbsDimension x="0" y="-4"/></Offset>
+														<Offset><AbsDimension x="0" y="2"/></Offset>
 													</Anchor>
 													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
 														<Offset><AbsDimension x="-2" y="0"/></Offset>
@@ -12399,92 +12440,262 @@
 														<AbsValue val="8"/>
 													</EdgeSize>
 												</Backdrop>
+												<Layers>
+													<Layer level="ARTWORK">
+														<Texture name="XPerl_Options_Profiles_HiddenDebuffs_Divider">
+															<Size>
+																<AbsDimension x="1" y="1"/>
+															</Size>
+															<Anchors>
+																<Anchor point="TOP">
+																	<Offset><AbsDimension x="0" y="-4"/></Offset>
+																</Anchor>
+																<Anchor point="BOTTOM">
+																	<Offset><AbsDimension x="0" y="2"/></Offset>
+																</Anchor>
+																<Anchor point="CENTER">
+																	<Offset><AbsDimension x="0" y="0"/></Offset>
+																</Anchor>
+															</Anchors>
+															<Color r="0.55" g="0.45" b="0.2" a="0.85"/>
+														</Texture>
+													</Layer>
+												</Layers>
 												<Scripts>
 													<OnLoad>
 														self:SetBackdropColor(0.05, 0.05, 0.05, 0.8)
 														self:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
-														self.scroll = _G[self:GetName().."ScrollBar"]
 													</OnLoad>
-													<OnMouseWheel>
-														if (self.scroll and self.scroll.bar) then
-															if (delta > 0) then
-																self.scroll.bar:SetValue(self.scroll.bar:GetValue() - self.scroll.bar:GetValueStep())
-															else
-																self.scroll.bar:SetValue(self.scroll.bar:GetValue() + self.scroll.bar:GetValueStep())
-															end
-														end
-													</OnMouseWheel>
 												</Scripts>
 												<Frames>
-													<Frame name="XPerl_Options_Profiles_HiddenDebuffs_ListInner">
+													<Frame name="XPerl_Options_Profiles_HiddenDebuffs_BuffsCol" enableMouse="true">
 														<Anchors>
-															<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List">
+															<Anchor point="TOPLEFT">
 																<Offset><AbsDimension x="4" y="-4"/></Offset>
 															</Anchor>
-															<Anchor point="BOTTOMRIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List">
-																<Offset><AbsDimension x="-18" y="2"/></Offset>
+															<Anchor point="BOTTOMLEFT">
+																<Offset><AbsDimension x="4" y="2"/></Offset>
+															</Anchor>
+															<Anchor point="RIGHT" relativePoint="CENTER">
+																<Offset><AbsDimension x="-4" y="0"/></Offset>
 															</Anchor>
 														</Anchors>
 														<Frames>
-															<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List1" inherits="XPerlHiddenDebuffRowTemplate" id="1" hidden="true">
+															<Frame name="XPerl_Options_Profiles_HiddenDebuffs_BuffsInner">
 																<Anchors>
 																	<Anchor point="TOPLEFT"/>
+																	<Anchor point="BOTTOMRIGHT"/>
+																</Anchors>
+																<Frames>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Buffs1" inherits="XPerlHiddenDebuffRowTemplate" id="1" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT"/>
+																			<Anchor point="TOPRIGHT"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = false
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Buffs2" inherits="XPerlHiddenDebuffRowTemplate" id="2" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Buffs1" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_BuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = false
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Buffs3" inherits="XPerlHiddenDebuffRowTemplate" id="3" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Buffs2" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_BuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = false
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Buffs4" inherits="XPerlHiddenDebuffRowTemplate" id="4" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Buffs3" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_BuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = false
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Buffs5" inherits="XPerlHiddenDebuffRowTemplate" id="5" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Buffs4" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_BuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = false
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																</Frames>
+															</Frame>
+															<ScrollFrame name="XPerl_Options_Profiles_HiddenDebuffs_BuffsScrollBar" inherits="FauxScrollFrameTemplate" enableMouse="false" hidden="true">
+																<Size>
+																	<AbsDimension x="1" y="1"/>
+																</Size>
+																<Anchors>
 																	<Anchor point="TOPRIGHT"/>
 																</Anchors>
-															</Frame>
-															<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List2" inherits="XPerlHiddenDebuffRowTemplate" id="2" hidden="true">
-																<Anchors>
-																	<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List1" relativePoint="BOTTOMLEFT"/>
-																	<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_ListInner"/>
-																</Anchors>
-															</Frame>
-															<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List3" inherits="XPerlHiddenDebuffRowTemplate" id="3" hidden="true">
-																<Anchors>
-																	<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List2" relativePoint="BOTTOMLEFT"/>
-																	<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_ListInner"/>
-																</Anchors>
-															</Frame>
-															<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List4" inherits="XPerlHiddenDebuffRowTemplate" id="4" hidden="true">
-																<Anchors>
-																	<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List3" relativePoint="BOTTOMLEFT"/>
-																	<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_ListInner"/>
-																</Anchors>
-															</Frame>
-															<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List5" inherits="XPerlHiddenDebuffRowTemplate" id="5" hidden="true">
-																<Anchors>
-																	<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List4" relativePoint="BOTTOMLEFT"/>
-																	<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_ListInner"/>
-																</Anchors>
-															</Frame>
+																<Scripts>
+																	<OnLoad>
+																		self.bar = _G[self:GetName().."ScrollBar"]
+																		if (self.bar) then
+																			self.bar:Hide()
+																		end
+																	</OnLoad>
+																	<OnVerticalScroll>
+																		FauxScrollFrame_OnVerticalScroll(self, offset, 14, XPerl_Options_HiddenDebuffs_FillList)
+																	</OnVerticalScroll>
+																</Scripts>
+															</ScrollFrame>
 														</Frames>
-													</Frame>
-													<ScrollFrame name="XPerl_Options_Profiles_HiddenDebuffs_ListScrollBar" inherits="FauxScrollFrameTemplate">
-														<Anchors>
-															<Anchor point="TOPRIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List">
-																<Offset><AbsDimension x="-2" y="-4"/></Offset>
-															</Anchor>
-															<Anchor point="BOTTOMRIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List">
-																<Offset><AbsDimension x="-2" y="4"/></Offset>
-															</Anchor>
-														</Anchors>
 														<Scripts>
-															<OnLoad>
-																self.bar = _G[self:GetName().."ScrollBar"]
-															</OnLoad>
-															<OnVerticalScroll>
-																FauxScrollFrame_OnVerticalScroll(self, offset, 14, XPerl_Options_HiddenDebuffs_FillList)
-															</OnVerticalScroll>
 															<OnMouseWheel>
-																if (self.bar) then
+																local scroll = _G["XPerl_Options_Profiles_HiddenDebuffs_BuffsScrollBar"]
+																if (scroll and scroll.bar) then
 																	if (delta > 0) then
-																		self.bar:SetValue(self.bar:GetValue() - self.bar:GetValueStep())
+																		scroll.bar:SetValue(scroll.bar:GetValue() - scroll.bar:GetValueStep())
 																	else
-																		self.bar:SetValue(self.bar:GetValue() + self.bar:GetValueStep())
+																		scroll.bar:SetValue(scroll.bar:GetValue() + scroll.bar:GetValueStep())
 																	end
 																end
 															</OnMouseWheel>
 														</Scripts>
-													</ScrollFrame>
+													</Frame>
+													<Frame name="XPerl_Options_Profiles_HiddenDebuffs_DebuffsCol" enableMouse="true">
+														<Anchors>
+															<Anchor point="TOPRIGHT">
+																<Offset><AbsDimension x="-4" y="-4"/></Offset>
+															</Anchor>
+															<Anchor point="BOTTOMRIGHT">
+																<Offset><AbsDimension x="-4" y="2"/></Offset>
+															</Anchor>
+															<Anchor point="LEFT" relativePoint="CENTER">
+																<Offset><AbsDimension x="4" y="0"/></Offset>
+															</Anchor>
+														</Anchors>
+														<Frames>
+															<Frame name="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner">
+																<Anchors>
+																	<Anchor point="TOPLEFT"/>
+																	<Anchor point="BOTTOMRIGHT"/>
+																</Anchors>
+																<Frames>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs1" inherits="XPerlHiddenDebuffRowTemplate" id="1" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT"/>
+																			<Anchor point="TOPRIGHT"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = true
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs2" inherits="XPerlHiddenDebuffRowTemplate" id="2" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Debuffs1" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = true
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs3" inherits="XPerlHiddenDebuffRowTemplate" id="3" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Debuffs2" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = true
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs4" inherits="XPerlHiddenDebuffRowTemplate" id="4" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Debuffs3" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = true
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs5" inherits="XPerlHiddenDebuffRowTemplate" id="5" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Debuffs4" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = true
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																</Frames>
+															</Frame>
+															<ScrollFrame name="XPerl_Options_Profiles_HiddenDebuffs_DebuffsScrollBar" inherits="FauxScrollFrameTemplate" enableMouse="false" hidden="true">
+																<Size>
+																	<AbsDimension x="1" y="1"/>
+																</Size>
+																<Anchors>
+																	<Anchor point="TOPRIGHT"/>
+																</Anchors>
+																<Scripts>
+																	<OnLoad>
+																		self.bar = _G[self:GetName().."ScrollBar"]
+																		if (self.bar) then
+																			self.bar:Hide()
+																		end
+																	</OnLoad>
+																	<OnVerticalScroll>
+																		FauxScrollFrame_OnVerticalScroll(self, offset, 14, XPerl_Options_HiddenDebuffs_FillList)
+																	</OnVerticalScroll>
+																</Scripts>
+															</ScrollFrame>
+														</Frames>
+														<Scripts>
+															<OnMouseWheel>
+																local scroll = _G["XPerl_Options_Profiles_HiddenDebuffs_DebuffsScrollBar"]
+																if (scroll and scroll.bar) then
+																	if (delta > 0) then
+																		scroll.bar:SetValue(scroll.bar:GetValue() - scroll.bar:GetValueStep())
+																	else
+																		scroll.bar:SetValue(scroll.bar:GetValue() + scroll.bar:GetValueStep())
+																	end
+																end
+															</OnMouseWheel>
+														</Scripts>
+													</Frame>
 												</Frames>
 											</Frame>
 										</Frames>
