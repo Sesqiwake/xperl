@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.1.1
 ## Title: X-Perl |cffeda55fParty|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fГруппа|r
 ## Title-zhCN: X-Perl |cffeda55f小队窗|r
@@ -9,6 +10,8 @@
 ## Notes-zhTW: 整合預設的隊伍框架顯示.
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_Party
+## X-Sirus-Category: 16
 ## RequiredDeps: XPerl
 ## OptionalDeps: XPerl_ArcaneBar
 ## X-Curse-Packaged-Version: 3.1 beta 1

@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.1.1
 ## Title: X-Perl |cffeda55fRaid Helper|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fРейд помощник|r
 ## Title-zhCN: X-Perl |cffeda55f团队助手|r
@@ -9,6 +10,8 @@
 ## Notes-zhTW: 整合 CTRA MT目標視窗另增加額外功能, 以及提供協助框架.
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_RaidHelper
+## X-Sirus-Category: 16
 ## SavedVariablesPerCharacter: XPerlConfigHelper, XPerl_MainTanks
 ## RequiredDeps: XPerl
 ## X-Curse-Packaged-Version: 3.1 beta 1

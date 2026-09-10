@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.1.1
 ## Title: X-Perl |cffeda55fTutorial|r by |cFFFF8080Zek|r |cFF40FF40(LoadOnDemand)|r
 ## Title-ruRU: X-Perl |cffeda55fУчебное пособие|r |cFF40FF40(LoadOnDemand)|r
 ## Title-zhCN: X-Perl |cffeda55f教程|r
@@ -8,6 +9,8 @@
 ## Notes-zhTW: 提供新使用者簡單的使用教學.
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_Tutorial
+## X-Sirus-Category: 16
 ## RequiredDeps: XPerl
 ## LoadOnDemand: 1
 ## X-Curse-Packaged-Version: 3.1 beta 1

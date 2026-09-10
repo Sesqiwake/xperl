@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.1.1
 ## Title: X-Perl |cffeda55fRaid Monitor|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fМонитор|r
 ## Title-zhCN: X-Perl |cffeda55f团队监控|r
@@ -8,6 +9,8 @@
 ## Notes-zhTW: 提供施法進度以及法力狀態治療監控視窗.
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_RaidMonitor
+## X-Sirus-Category: 16
 ## SavedVariablesPerCharacter: XPerlRaidMonConfig
 ## RequiredDeps: XPerl
 ## DefaultState: Disabled
