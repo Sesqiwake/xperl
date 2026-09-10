@@ -9,6 +9,43 @@ local ev = CreateFrame("Frame")
 local buffAlpha = 1
 local buffFadingOut
 local buffsUpdateFlag
+local cooldownConfigSaved
+
+-- Temporarily apply player buff cooldown options over global buffs.* for UpdateBuffs.
+function XPerl_Player_Buffs_PushCooldownConfig()
+	if (not conf or not conf.buffs or not pconf or not pconf.buffs) then
+		return
+	end
+	local b = conf.buffs
+	if (not cooldownConfigSaved) then
+		cooldownConfigSaved = {}
+	end
+	cooldownConfigSaved.cooldown = b.cooldown
+	cooldownConfigSaved.cooldownAny = b.cooldownAny
+	cooldownConfigSaved.countdownAny = b.countdownAny
+	cooldownConfigSaved.countdownStart = b.countdownStart
+
+	b.cooldown = pconf.buffs.cooldown
+	if (pconf.buffs.cooldownAny) then
+		b.cooldownAny = 1
+		b.countdownAny = 1
+		-- Show seconds on others from at least the last 30s (or keep a higher global start).
+		if (not b.countdownStart or b.countdownStart < 30) then
+			b.countdownStart = 30
+		end
+	end
+end
+
+function XPerl_Player_Buffs_PopCooldownConfig()
+	if (not cooldownConfigSaved or not conf or not conf.buffs) then
+		return
+	end
+	local b = conf.buffs
+	b.cooldown = cooldownConfigSaved.cooldown
+	b.cooldownAny = cooldownConfigSaved.cooldownAny
+	b.countdownAny = cooldownConfigSaved.countdownAny
+	b.countdownStart = cooldownConfigSaved.countdownStart
+end
 
 -- FlashExpiringBuffs
 local function FlashExpiringBuffs(self, elapsed)
@@ -110,11 +147,10 @@ function XPerl_PlayerBuffs_OnUpdate(self, elapsed)
 		-- So we intercept UNIT_AURA for this, but will still have to catch PLAYER_AURAS_CHANGED because there's some
 		-- latency between a buff expiring (according to UNIT_BUFF), and the aura fading (according to PLAYER_AURAS_CHANGED).
 		if (pconf.buffs.enable) then
-			local a = conf.buffs.cooldown
-			conf.buffs.cooldown = pconf.buffs.cooldown
+			XPerl_Player_Buffs_PushCooldownConfig()
 			XPerl_Unit_UpdateBuffs(XPerl_Player, pconf.buffs.count, pconf.buffs.count, 0, 0)
 			XPerl_Player_Buffs_Position(XPerl_Player)
-			conf.buffs.cooldown = a
+			XPerl_Player_Buffs_PopCooldownConfig()
 
 			XPerl_Player_TempEnchantUpdate(XPerl_Player)
 
@@ -251,10 +287,9 @@ function XPerl_Player_BuffSetup(self)
 	ev:RegisterEvent("UNIT_EXITED_VEHICLE")
 	self.buffFrame:Show()
 
-	local a = conf.buffs.cooldown
-	conf.buffs.cooldown = pconf.buffs.cooldown
+	XPerl_Player_Buffs_PushCooldownConfig()
 	XPerl_Unit_UpdateBuffs(XPerl_Player, pconf.buffs.count, pconf.buffs.count, 0, 0)
-	conf.buffs.cooldown = a
+	XPerl_Player_Buffs_PopCooldownConfig()
 
 	self.buffOptMix = nil
 	XPerl_Player_Buffs_Position(self)

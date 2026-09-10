@@ -2343,6 +2343,7 @@ local function XPerl_Player_ConfigDefault(default)
 			hideBlizzard	= 1,
 			count		= 40,
 			cooldown	= 1,
+--			cooldownAny	= nil,
 			flash		= 1,
 		},
 		debuffs = {
