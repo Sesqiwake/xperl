@@ -12709,6 +12709,7 @@
 												<Scripts>
 													<OnLoad>
 														self.tooltipText = XPERL_CONF_ABSORB_TEXTURE
+														self:SetHitRectInsets(0, 0, 0, 0)
 														local stray = _G[self:GetName().."Text"]
 														if (stray) then
 															stray:Hide()
@@ -12742,7 +12743,7 @@
 												</Anchors>
 												<Scripts>
 													<OnLoad>
-														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_COLOR")
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_COLOR", true)
 													</OnLoad>
 													<OnShow>
 														XPerl_Absorb_EnsureConfig(XPerlDB)
@@ -12849,9 +12850,10 @@
 											</Frame>
 											<CheckButton name="XPerl_Options_Profiles_Absorb_HealEnable" inherits="XPerlCheckButtonTemplate">
 												<Anchors>
-													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HealTitle" relativePoint="TOPLEFT">
-														<Offset><AbsDimension x="138" y="9"/></Offset>
+													<Anchor point="TOP" relativeTo="XPerl_Options_Profiles_Absorb_HealTitle" relativePoint="TOP">
+														<Offset><AbsDimension x="0" y="9"/></Offset>
 													</Anchor>
+													<Anchor point="LEFT" relativeTo="XPerl_Options_Profiles_Absorb_Enable" relativePoint="LEFT"/>
 												</Anchors>
 												<Scripts>
 													<OnLoad>
@@ -12892,6 +12894,7 @@
 												<Scripts>
 													<OnLoad>
 														self.tooltipText = XPERL_CONF_ABSORB_TEXTURE
+														self:SetHitRectInsets(0, 0, 0, 0)
 														local stray = _G[self:GetName().."Text"]
 														if (stray) then
 															stray:Hide()
@@ -12925,7 +12928,7 @@
 												</Anchors>
 												<Scripts>
 													<OnLoad>
-														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_COLOR")
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_COLOR", true)
 													</OnLoad>
 													<OnShow>
 														XPerl_Absorb_EnsureConfig(XPerlDB)

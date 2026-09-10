@@ -136,7 +136,7 @@ function XPerl_Absorb_LayoutExtra(frame)
 		n = n + 1
 	end
 	local h = conf.absorb.healAbsorb
-	if (h and h.enable and WantSeparate(h)) then
+	if (conf.absorb.enable and h and h.enable and WantSeparate(h)) then
 		n = n + 1
 	end
 	if (n == 0) then
@@ -499,6 +499,26 @@ local function SafeUnitHealAbsorb(unit)
 	return 0
 end
 
+local function ClearAbsorbOnFrame(frame, healthBar, statsFrame)
+	local had = (statsFrame.xperlAbsorbLayoutExtra or 0) > 0
+		or (statsFrame.xperlAbsorbBar and statsFrame.xperlAbsorbBar:IsShown())
+		or (statsFrame.xperlHealAbsorbBar and statsFrame.xperlHealAbsorbBar:IsShown())
+		or (healthBar.xperlAbsorbOverlay and healthBar.xperlAbsorbOverlay:IsShown())
+		or (healthBar.xperlHealAbsorbOverlay and healthBar.xperlHealAbsorbOverlay:IsShown())
+
+	HideBar(healthBar.xperlAbsorbOverlay)
+	HideBar(healthBar.xperlHealAbsorbOverlay)
+	HideBar(statsFrame.xperlAbsorbBar)
+	HideBar(statsFrame.xperlHealAbsorbBar)
+	frame.xperlAbsorbBarMax = nil
+	frame.xperlHealAbsorbBarMax = nil
+
+	if (had) then
+		SyncExtraHeight(frame, statsFrame, 0)
+		RelayoutStats(frame)
+	end
+end
+
 function XPerl_SetAbsorbBar(frame)
 	if (not frame) then
 		return
@@ -511,6 +531,11 @@ function XPerl_SetAbsorbBar(frame)
 	end
 
 	local cfg = conf and conf.absorb
+	if (not cfg or not cfg.enable) then
+		ClearAbsorbOnFrame(frame, healthBar, statsFrame)
+		return
+	end
+
 	local showSideValue = UnitShowSideValue(frame)
 	local showCenterValue
 	-- Raid: value centered on the thin bar (no room on the side)
@@ -519,20 +544,10 @@ function XPerl_SetAbsorbBar(frame)
 		showCenterValue = 1
 	end
 
-	if (not cfg) then
-		HideBar(healthBar.xperlAbsorbOverlay)
-		HideBar(healthBar.xperlHealAbsorbOverlay)
-		HideBar(statsFrame.xperlAbsorbBar)
-		HideBar(statsFrame.xperlHealAbsorbBar)
-		SyncExtraHeight(frame, statsFrame, 0)
-		RelayoutStats(frame)
-		return
-	end
-
 	local unit = frame.partyid or SecureButton_GetUnit(frame)
 	local allowed = FrameAllowed(frame) and unit and UnitExists(unit)
 
-	local dmgEnable = allowed and cfg.enable
+	local dmgEnable = allowed
 	local healCfg = cfg.healAbsorb
 	local healEnable = allowed and healCfg and healCfg.enable
 
@@ -633,6 +648,9 @@ function XPerl_RefreshAbsorbFrames(unit)
 	if (not unit) then
 		return
 	end
+	if (not conf or not conf.absorb or not conf.absorb.enable) then
+		return
+	end
 
 	local function tryFrame(frame)
 		if (frame and frame.partyid and UnitIsUnit(frame.partyid, unit)) then
@@ -678,7 +696,38 @@ function XPerl_RefreshAbsorbFrames(unit)
 	end
 end
 
+local absorbWatch
+local absorbEventsOn
+
+local function AbsorbWatchSetEnabled(on)
+	if (not absorbWatch) then
+		return
+	end
+	on = on and true or nil
+	if (on == absorbEventsOn) then
+		return
+	end
+	absorbEventsOn = on
+	if (on) then
+		pcall(function()
+			absorbWatch:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
+		end)
+		pcall(function()
+			absorbWatch:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+		end)
+	else
+		pcall(function()
+			absorbWatch:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
+		end)
+		pcall(function()
+			absorbWatch:UnregisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+		end)
+	end
+end
+
 function XPerl_Absorb_RefreshAll()
+	AbsorbWatchSetEnabled(conf and conf.absorb and conf.absorb.enable)
+
 	-- Re-run Set_Bits so natural heights are restored before absorb extra is applied
 	if (XPerl_Player_Set_Bits and XPerl_Player) then
 		XPerl_Player_Set_Bits(XPerl_Player)
@@ -730,20 +779,17 @@ function XPerl_Absorb_RefreshAll()
 end
 
 do
-	local absorbWatch = CreateFrame("Frame")
+	absorbWatch = CreateFrame("Frame")
 	absorbWatch:RegisterEvent("PLAYER_ENTERING_WORLD")
-	pcall(function()
-		absorbWatch:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
-	end)
-	pcall(function()
-		absorbWatch:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
-	end)
 	absorbWatch:SetScript("OnEvent", function(self, event, unit)
 		if (event == "PLAYER_ENTERING_WORLD") then
 			XPerl_Absorb_RefreshAll()
 			return
 		end
 		if (event == "UNIT_ABSORB_AMOUNT_CHANGED" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED") then
+			if (not conf or not conf.absorb or not conf.absorb.enable) then
+				return
+			end
 			XPerl_RefreshAbsorbFrames(unit)
 		end
 	end)
