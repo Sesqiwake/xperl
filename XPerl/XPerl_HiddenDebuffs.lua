@@ -354,11 +354,7 @@ function XPerl_HiddenDebuffs_RefreshUnitFrame(unitFrame)
 		if (conf and conf.buffs) then
 			conf.buffs.cooldown = pconf.buffs.cooldown
 		end
-		if (pconf.buffs.wrap) then
-			XPerl_Unit_UpdateBuffs(unitFrame, nil, nil, 0, 0)
-		else
-			XPerl_Unit_UpdateBuffs(unitFrame, pconf.buffs.count, pconf.buffs.count, 0, 0)
-		end
+		XPerl_Unit_UpdateBuffs(unitFrame, pconf.buffs.count, pconf.buffs.count, 0, 0)
 		if (conf and conf.buffs and a ~= nil) then
 			conf.buffs.cooldown = a
 		end
