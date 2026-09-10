@@ -12547,6 +12547,18 @@
 																			</OnLoad>
 																		</Scripts>
 																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Buffs6" inherits="XPerlHiddenDebuffRowTemplate" id="6" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Buffs5" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_BuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = false
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
 																</Frames>
 															</Frame>
 															<ScrollFrame name="XPerl_Options_Profiles_HiddenDebuffs_BuffsScrollBar" inherits="FauxScrollFrameTemplate" enableMouse="false" hidden="true">
@@ -12652,6 +12664,18 @@
 																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs5" inherits="XPerlHiddenDebuffRowTemplate" id="5" hidden="true">
 																		<Anchors>
 																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Debuffs4" relativePoint="BOTTOMLEFT"/>
+																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner"/>
+																		</Anchors>
+																		<Scripts>
+																			<OnLoad>
+																				self.nameText = _G[self:GetName().."Name"]
+																				self.isDebuff = true
+																			</OnLoad>
+																		</Scripts>
+																	</Frame>
+																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs6" inherits="XPerlHiddenDebuffRowTemplate" id="6" hidden="true">
+																		<Anchors>
+																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Debuffs5" relativePoint="BOTTOMLEFT"/>
 																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner"/>
 																		</Anchors>
 																		<Scripts>

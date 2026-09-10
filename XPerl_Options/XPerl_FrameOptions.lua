@@ -3184,7 +3184,7 @@ if (XPerl_UpgradeSettings) then
 end
 
 -- Hidden buffs/debuffs options UI (loaded with XPerl_Options)
-local HIDENDEBUFF_LIST_ROWS = 4
+local HIDENDEBUFF_LIST_ROWS = 6
 local HIDENDEBUFF_ROW_HEIGHT = 14
 local HIDENDEBUFF_BUFFS_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_Buffs"
 local HIDENDEBUFF_DEBUFFS_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_Debuffs"
