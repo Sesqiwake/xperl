@@ -350,13 +350,12 @@ function XPerl_HiddenDebuffs_RefreshUnitFrame(unitFrame)
 	-- Player buffs use XPerl_PlayerBuffs counts/cooldown override
 	if (unitFrame == XPerl_Player and XPerlDB and XPerlDB.player and XPerlDB.player.buffs and XPerlDB.player.buffs.enable) then
 		local pconf = XPerlDB.player
-		local a = conf and conf.buffs and conf.buffs.cooldown
-		if (conf and conf.buffs) then
-			conf.buffs.cooldown = pconf.buffs.cooldown
+		if (XPerl_Player_Buffs_PushCooldownConfig) then
+			XPerl_Player_Buffs_PushCooldownConfig()
 		end
 		XPerl_Unit_UpdateBuffs(unitFrame, pconf.buffs.count, pconf.buffs.count, 0, 0)
-		if (conf and conf.buffs and a ~= nil) then
-			conf.buffs.cooldown = a
+		if (XPerl_Player_Buffs_PopCooldownConfig) then
+			XPerl_Player_Buffs_PopCooldownConfig()
 		end
 		if (XPerl_Player_Buffs_Position) then
 			XPerl_Player_Buffs_Position(unitFrame)
