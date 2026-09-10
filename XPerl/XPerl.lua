@@ -4925,16 +4925,46 @@ do
     partyBootstrap:RegisterEvent("PARTY_MEMBERS_CHANGED")
     partyBootstrap:RegisterEvent("RAID_ROSTER_UPDATE")
 
-    -- Full layout once on load/PEW; roster churn only does light visibility+display.
-    local function SafePartyLayout()
-        if type(XPerl_Party_Set_Bits) ~= "function" then return end
-        XPerl_QueueOutOfCombat(XPerl_Party_Set_Bits)
-        if not InCombatLockdown() and type(XPerl_Party_UpdateDisplayAll) == "function" then
-            XPerl_Party_UpdateDisplayAll()
+    -- Per-slot: each SecureParty child needs Set_Bits1 once per session.
+    -- After party1..4 have all been laid out, roster stays on light refresh.
+    local partyLayoutDone = {}
+
+    local function PartyNeedsFullLayout()
+        for i = 1, 4 do
+            if UnitExists("party"..i) and not partyLayoutDone[i] then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function MarkPartyLayoutDone()
+        for i = 1, 4 do
+            if UnitExists("party"..i) then
+                partyLayoutDone[i] = true
+            end
         end
     end
 
+    local function SafePartyLayout()
+        if InCombatLockdown() then
+            XPerl_QueueOutOfCombat(SafePartyLayout)
+            return
+        end
+        if type(XPerl_Party_Set_Bits) == "function" then
+            XPerl_Party_Set_Bits()
+        end
+        if type(XPerl_Party_UpdateDisplayAll) == "function" then
+            XPerl_Party_UpdateDisplayAll()
+        end
+        MarkPartyLayoutDone()
+    end
+
     local function SafePartyRoster()
+        if PartyNeedsFullLayout() then
+            SafePartyLayout()
+            return
+        end
         if type(XPerl_Party_RosterRefresh) == "function" then
             XPerl_Party_RosterRefresh()
             return
@@ -4966,7 +4996,11 @@ do
         end
 
         if event == "PLAYER_ENTERING_WORLD" then
-            self:Schedule("layout", 0.6)
+            if PartyNeedsFullLayout() then
+                self:Schedule("layout", 0.6)
+            else
+                self:Schedule("roster", 0.6)
+            end
             return
         end
 
