@@ -5395,26 +5395,6 @@
 										self.configBase = "XPerlDB.player.buffs"
 										self.configIndex = "cooldown"
 										self.configClick = function() if (XPerl_Player_BuffSetup) then XPerl_Player_BuffSetup(XPerl_Player) end end
-										self.Validate = function()
-											XPerl_Options_EnableSibling(self, "CooldownsAny")
-										end
-									</OnLoad>
-								</Scripts>
-							</CheckButton>
-
-							<CheckButton name="$parent_CooldownsAny" inherits="XPerlCheckButtonTemplate">
-								<Size><AbsDimension x="26" y="26"/></Size>
-								<Anchors>
-									<Anchor point="TOPLEFT" relativeTo="$parent_Cooldowns" relativePoint="TOPRIGHT">
-										<Offset><AbsDimension x="90" y="0"/></Offset>
-									</Anchor>
-								</Anchors>
-								<Scripts>
-									<OnLoad>
-										XPerl_OptionsSetMyText(self, "XPERL_CONF_PLAYER_BUFFSCOOLDOWNSANY")
-										self.configBase = "XPerlDB.player.buffs"
-										self.configIndex = "cooldownAny"
-										self.configClick = function() if (XPerl_Player_BuffSetup) then XPerl_Player_BuffSetup(XPerl_Player) end end
 									</OnLoad>
 								</Scripts>
 							</CheckButton>

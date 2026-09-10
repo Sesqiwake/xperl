@@ -11,40 +11,23 @@ local buffFadingOut
 local buffsUpdateFlag
 local cooldownConfigSaved
 
--- Temporarily apply player buff cooldown options over global buffs.* for UpdateBuffs.
+-- Temporarily apply player buff cooldown option over global buffs.cooldown for UpdateBuffs.
 function XPerl_Player_Buffs_PushCooldownConfig()
 	if (not conf or not conf.buffs or not pconf or not pconf.buffs) then
 		return
 	end
-	local b = conf.buffs
 	if (not cooldownConfigSaved) then
 		cooldownConfigSaved = {}
 	end
-	cooldownConfigSaved.cooldown = b.cooldown
-	cooldownConfigSaved.cooldownAny = b.cooldownAny
-	cooldownConfigSaved.countdownAny = b.countdownAny
-	cooldownConfigSaved.countdownStart = b.countdownStart
-
-	b.cooldown = pconf.buffs.cooldown
-	if (pconf.buffs.cooldownAny) then
-		b.cooldownAny = 1
-		b.countdownAny = 1
-		-- Show seconds on others from at least the last 30s (or keep a higher global start).
-		if (not b.countdownStart or b.countdownStart < 30) then
-			b.countdownStart = 30
-		end
-	end
+	cooldownConfigSaved.cooldown = conf.buffs.cooldown
+	conf.buffs.cooldown = pconf.buffs.cooldown
 end
 
 function XPerl_Player_Buffs_PopCooldownConfig()
 	if (not cooldownConfigSaved or not conf or not conf.buffs) then
 		return
 	end
-	local b = conf.buffs
-	b.cooldown = cooldownConfigSaved.cooldown
-	b.cooldownAny = cooldownConfigSaved.cooldownAny
-	b.countdownAny = cooldownConfigSaved.countdownAny
-	b.countdownStart = cooldownConfigSaved.countdownStart
+	conf.buffs.cooldown = cooldownConfigSaved.cooldown
 end
 
 -- FlashExpiringBuffs
