@@ -35,6 +35,24 @@ XPERL_CONF_PROFILES_NOT_FOUND			= "Profile not found: %s"
 
 XPERL_CONF_SIRUS_RESERVED				= "Reserved"
 
+XPERL_CONF_ABSORB						= "Absorbs"
+XPERL_CONF_ABSORB_ENABLE				= "Enable"
+XPERL_CONF_ABSORB_ENABLE_DESC			= "Show damage absorb on unit frames (Sirus API)"
+XPERL_CONF_ABSORB_SHOW_ON				= "Also show on:"
+XPERL_CONF_ABSORB_PARTY				= "Party"
+XPERL_CONF_ABSORB_RAID					= "Raid"
+XPERL_CONF_ABSORB_DISPLAY				= "Display"
+XPERL_CONF_ABSORB_TEXTURE				= "Bar texture"
+XPERL_CONF_ABSORB_TEXTURE_DEFAULT		= "Default"
+XPERL_CONF_ABSORB_COLOR					= "Bar colour"
+XPERL_CONF_ABSORB_COLOR_DESC			= "Choose absorb bar colour"
+XPERL_CONF_ABSORB_MODE_SEPARATE			= "Separate"
+XPERL_CONF_ABSORB_MODE_SEPARATE_DESC		= "Separate bar below health"
+XPERL_CONF_ABSORB_MODE_OVERLAY			= "On HP"
+XPERL_CONF_ABSORB_MODE_OVERLAY_DESC		= "Overlay on the health bar"
+XPERL_CONF_ABSORB_HEALABSORB			= "Heal absorb"
+XPERL_CONF_ABSORB_HEALABSORB_DESC		= "Incoming heal reduction (e.g. Necrotic)"
+
 XPERL_CONF_OPTIONS_COLOUR				= "Change the colour of the options window"
 
 -- Titles

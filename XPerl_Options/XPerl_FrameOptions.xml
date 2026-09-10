@@ -1067,9 +1067,15 @@
 				if (not self.list) then
 					self.list = XPerl_AllBarTextures()
 				end
-				if (XPerlDB and XPerlDB.bar.texture and self.list) then
+				local current
+				if (self.applyGet) then
+					current = self.applyGet()
+				elseif (XPerlDB and XPerlDB.bar and XPerlDB.bar.texture) then
+					current = XPerlDB.bar.texture
+				end
+				if (current and self.list) then
 					for k,v in pairs(self.list) do
-						if (XPerlDB.bar.texture[1] == v[1] and XPerlDB.bar.texture[2] == v[2]) then
+						if (current[1] == v[1] and current[2] == v[2]) then
 							self.Selection = k
 						end
 					end
@@ -1209,9 +1215,18 @@
 				<Scripts>
 					<OnClick>
 						if (XPerlDB) then
-							XPerlDB.bar.texture = self:GetParent().list[self:GetParent().Selection]
+							local parent = self:GetParent()
+							local entry = parent.list and parent.list[parent.Selection]
+							if (entry) then
+								if (parent.applyFunc) then
+									parent.applyFunc(entry)
+									parent.applyFunc = nil
+								else
+									XPerlDB.bar.texture = entry
+									XPerl_SetBarTextures()
+								end
+							end
 							XPerl_Options_TextureSelect:Hide()
-							XPerl_SetBarTextures()
 						end
 					</OnClick>
 				</Scripts>
@@ -3268,6 +3283,7 @@
 								self:SetNormalTexture(tex)
 							</OnShow>
 							<OnClick>
+								XPerl_Options_TextureSelect.applyFunc = nil
 								XPerl_Options_TextureSelect:Show()
 							</OnClick>
 						</Scripts>
@@ -11900,7 +11916,7 @@
 							<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Content"/>
 							<Anchor point="TOPRIGHT" relativeTo="XPerl_Options_Profiles_Content"/>
 							<Anchor point="BOTTOM" relativeTo="XPerl_Options_Profiles_Content" relativePoint="CENTER">
-								<Offset><AbsDimension x="0" y="-5"/></Offset>
+								<Offset><AbsDimension x="0" y="-28"/></Offset>
 							</Anchor>
 						</Anchors>
 						<Frames>
@@ -12497,7 +12513,7 @@
 					<Frame name="XPerl_Options_Profiles_RowBottom">
 						<Anchors>
 							<Anchor point="TOP" relativeTo="XPerl_Options_Profiles_Content" relativePoint="CENTER">
-								<Offset><AbsDimension x="0" y="-10"/></Offset>
+								<Offset><AbsDimension x="0" y="-28"/></Offset>
 							</Anchor>
 							<Anchor point="BOTTOMLEFT" relativeTo="XPerl_Options_Profiles_Content"/>
 							<Anchor point="BOTTOMRIGHT" relativeTo="XPerl_Options_Profiles_Content"/>
@@ -12512,13 +12528,468 @@
 								<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
 									<EdgeSize><AbsValue val="9"/></EdgeSize>
 								</Backdrop>
-								<Layers>
-									<Layer level="ARTWORK">
-										<FontString inherits="GameFontDisableSmall" justifyH="CENTER" text="XPERL_CONF_SIRUS_RESERVED">
-											<Anchors><Anchor point="CENTER"/></Anchors>
-										</FontString>
-									</Layer>
-								</Layers>
+								<Frames>
+									<Frame name="XPerl_Options_Profiles_Absorb">
+										<Anchors>
+											<Anchor point="TOPLEFT">
+												<Offset><AbsDimension x="6" y="-6"/></Offset>
+											</Anchor>
+											<Anchor point="BOTTOMRIGHT">
+												<Offset><AbsDimension x="-6" y="4"/></Offset>
+											</Anchor>
+										</Anchors>
+										<Layers>
+											<Layer level="ARTWORK">
+												<FontString name="XPerl_Options_Profiles_Absorb_Title" inherits="GameFontNormal" justifyH="LEFT" text="XPERL_CONF_ABSORB">
+													<Anchors>
+														<Anchor point="TOPLEFT">
+															<Offset><AbsDimension x="2" y="-2"/></Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+											</Layer>
+										</Layers>
+										<Frames>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_Enable" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_Title" relativePoint="TOPLEFT">
+														<Offset><AbsDimension x="138" y="9"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_ENABLE", true)
+														self.configBase = "XPerlDB.absorb"
+														self.configIndex = "enable"
+														self.configClick = XPerl_Options_Absorb_OnChanged
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<Frame name="XPerl_Options_Profiles_Absorb_HeaderLine1">
+												<Size><AbsDimension x="1" y="1"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_Enable" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="-138" y="-2"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_Absorb">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<Texture setAllPoints="true">
+															<Color r="0.45" g="0.45" b="0.45" a="0.9"/>
+														</Texture>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Frame name="XPerl_Options_Profiles_Absorb_ShowOnRow">
+												<Size><AbsDimension x="1" y="10"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HeaderLine1" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-3"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_Absorb">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<FontString inherits="GameFontNormalSmall" justifyH="LEFT" text="XPERL_CONF_ABSORB_SHOW_ON">
+															<FontHeight>
+																<AbsValue val="12"/>
+															</FontHeight>
+															<Anchors>
+																<Anchor point="LEFT">
+																	<Offset><AbsDimension x="2" y="0"/></Offset>
+																</Anchor>
+															</Anchors>
+														</FontString>
+													</Layer>
+												</Layers>
+											</Frame>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_Party" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_ShowOnRow" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-1"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_PARTY", true)
+														self.configBase = "XPerlDB.absorb"
+														self.configIndex = "party"
+														self.configClick = XPerl_Options_Absorb_OnChanged
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_Raid" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOP" relativeTo="XPerl_Options_Profiles_Absorb_Party" relativePoint="TOP"/>
+													<Anchor point="LEFT" relativeTo="XPerl_Options_Profiles_Absorb_Enable" relativePoint="LEFT"/>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_RAID", true)
+														self.configBase = "XPerlDB.absorb"
+														self.configIndex = "raid"
+														self.configClick = XPerl_Options_Absorb_OnChanged
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<Frame name="XPerl_Options_Profiles_Absorb_HeaderLine2">
+												<Size><AbsDimension x="1" y="1"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_Party" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-2"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_Absorb">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<Texture setAllPoints="true">
+															<Color r="0.45" g="0.45" b="0.45" a="0.9"/>
+														</Texture>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Frame name="XPerl_Options_Profiles_Absorb_DisplayRow">
+												<Size><AbsDimension x="1" y="12"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HeaderLine2" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-3"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_Absorb">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<FontString inherits="GameFontNormalSmall" justifyH="LEFT" text="XPERL_CONF_ABSORB_DISPLAY">
+															<FontHeight>
+																<AbsValue val="12"/>
+															</FontHeight>
+															<Anchors>
+																<Anchor point="LEFT">
+																	<Offset><AbsDimension x="2" y="0"/></Offset>
+																</Anchor>
+															</Anchors>
+														</FontString>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Button name="XPerl_Options_Profiles_Absorb_Texture" inherits="XPerlColorPickerTemplate">
+												<Size><AbsDimension x="100" y="10"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_DisplayRow" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-3"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="OVERLAY">
+														<FontString name="$parentName" inherits="GameFontDisableSmall" justifyH="LEFT" text="XPERL_CONF_ABSORB_TEXTURE_DEFAULT">
+															<Anchors>
+																<Anchor point="LEFT">
+																	<Offset><AbsDimension x="6" y="0"/></Offset>
+																</Anchor>
+																<Anchor point="RIGHT">
+																	<Offset><AbsDimension x="-6" y="0"/></Offset>
+																</Anchor>
+															</Anchors>
+															<Color r="1" g="1" b="1"/>
+														</FontString>
+													</Layer>
+												</Layers>
+												<NormalTexture file="Interface\TargetingFrame\UI-StatusBar"/>
+												<HighlightTexture file="Interface\Addons\XPerl\Images\XPerl_Highlight" alphaMode="ADD">
+													<TexCoords left="0" right="1" top="0.5" bottom="1"/>
+												</HighlightTexture>
+												<Scripts>
+													<OnLoad>
+														self.tooltipText = XPERL_CONF_ABSORB_TEXTURE
+														local stray = _G[self:GetName().."Text"]
+														if (stray) then
+															stray:Hide()
+														end
+													</OnLoad>
+													<OnShow>
+														XPerl_Absorb_EnsureConfig(XPerlDB)
+														local tex = XPerlDB.absorb and XPerlDB.absorb.texture
+														local label = _G[self:GetName().."Name"]
+														if (tex) then
+															if (label) then
+																label:SetText(tex[1] or XPERL_CONF_ABSORB_TEXTURE_DEFAULT)
+															end
+															if (tex[2]) then
+																self:SetNormalTexture(tex[2])
+															end
+														elseif (label) then
+															label:SetText(XPERL_CONF_ABSORB_TEXTURE_DEFAULT)
+														end
+													</OnShow>
+													<OnClick>
+														XPerl_Options_Absorb_OpenTexture("absorb")
+													</OnClick>
+												</Scripts>
+											</Button>
+											<Button name="XPerl_Options_Profiles_Absorb_Color" inherits="XPerlColorPickerTemplate">
+												<Anchors>
+													<Anchor point="LEFT" relativeTo="XPerl_Options_Profiles_Absorb_Texture" relativePoint="RIGHT">
+														<Offset><AbsDimension x="8" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_COLOR")
+													</OnLoad>
+													<OnShow>
+														XPerl_Absorb_EnsureConfig(XPerlDB)
+														local c = XPerlDB.absorb and XPerlDB.absorb.color
+														if (c) then
+															_G[self:GetName().."_Colour"]:SetVertexColor(c.r, c.g, c.b)
+														end
+													</OnShow>
+													<OnClick>
+														XPerl_Absorb_EnsureConfig(XPerlDB)
+														XPerlLocked = 1
+														XPerl_ColourPicker.ParentFrame = XPerl_Options
+														XPerl_ColourPicker.varGet = function()
+															XPerl_Absorb_EnsureConfig(XPerlDB)
+															return XPerlDB.absorb.color
+														end
+														XPerl_ColourPicker.varSet = function(n)
+															XPerlDB.absorb.color.r = n.r
+															XPerlDB.absorb.color.g = n.g
+															XPerlDB.absorb.color.b = n.b
+															local sw = _G["XPerl_Options_Profiles_Absorb_Color_Colour"]
+															if (sw) then
+																sw:SetVertexColor(n.r, n.g, n.b)
+															end
+															XPerl_Options_Absorb_OnChanged()
+														end
+														XPerl_ColourPicker.alpha = nil
+														XPerl_ColourPicker:Show()
+													</OnClick>
+												</Scripts>
+											</Button>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_ModeSeparate" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_Texture" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-1"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_MODE_SEPARATE", true)
+														self.configBase = "XPerlDB.absorb"
+														self.configIndex = "separateBar"
+														self.configClick = XPerl_Options_Absorb_ModeClick
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_ModeOverlay" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_ModeSeparate" relativePoint="TOPLEFT">
+														<Offset><AbsDimension x="138" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_MODE_OVERLAY", true)
+														self.configBase = "XPerlDB.absorb"
+														self.configIndex = "overlay"
+														self.configClick = XPerl_Options_Absorb_ModeClick
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<Frame name="XPerl_Options_Profiles_Absorb_HeaderLine3">
+												<Size><AbsDimension x="1" y="1"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_ModeSeparate" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-2"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_Absorb">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<Texture setAllPoints="true">
+															<Color r="0.45" g="0.45" b="0.45" a="0.9"/>
+														</Texture>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Frame name="XPerl_Options_Profiles_Absorb_HealTitleRow">
+												<Size><AbsDimension x="1" y="12"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HeaderLine3" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-3"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_Absorb">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<FontString name="XPerl_Options_Profiles_Absorb_HealTitle" inherits="GameFontNormalSmall" justifyH="LEFT" text="XPERL_CONF_ABSORB_HEALABSORB">
+															<FontHeight>
+																<AbsValue val="12"/>
+															</FontHeight>
+															<Anchors>
+																<Anchor point="TOPLEFT">
+																	<Offset><AbsDimension x="2" y="-2"/></Offset>
+																</Anchor>
+															</Anchors>
+														</FontString>
+													</Layer>
+												</Layers>
+											</Frame>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_HealEnable" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HealTitle" relativePoint="TOPLEFT">
+														<Offset><AbsDimension x="138" y="9"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_ENABLE", true)
+														self.tooltipText = XPERL_CONF_ABSORB_HEALABSORB_DESC
+														self.configBase = "XPerlDB.absorb.healAbsorb"
+														self.configIndex = "enable"
+														self.configClick = XPerl_Options_Absorb_OnChanged
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<Button name="XPerl_Options_Profiles_Absorb_HealTexture" inherits="XPerlColorPickerTemplate">
+												<Size><AbsDimension x="100" y="10"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HealEnable" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="-138" y="-2"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="OVERLAY">
+														<FontString name="$parentName" inherits="GameFontDisableSmall" justifyH="LEFT" text="XPERL_CONF_ABSORB_TEXTURE_DEFAULT">
+															<Anchors>
+																<Anchor point="LEFT">
+																	<Offset><AbsDimension x="6" y="0"/></Offset>
+																</Anchor>
+																<Anchor point="RIGHT">
+																	<Offset><AbsDimension x="-6" y="0"/></Offset>
+																</Anchor>
+															</Anchors>
+															<Color r="1" g="1" b="1"/>
+														</FontString>
+													</Layer>
+												</Layers>
+												<NormalTexture file="Interface\TargetingFrame\UI-StatusBar"/>
+												<HighlightTexture file="Interface\Addons\XPerl\Images\XPerl_Highlight" alphaMode="ADD">
+													<TexCoords left="0" right="1" top="0.5" bottom="1"/>
+												</HighlightTexture>
+												<Scripts>
+													<OnLoad>
+														self.tooltipText = XPERL_CONF_ABSORB_TEXTURE
+														local stray = _G[self:GetName().."Text"]
+														if (stray) then
+															stray:Hide()
+														end
+													</OnLoad>
+													<OnShow>
+														XPerl_Absorb_EnsureConfig(XPerlDB)
+														local tex = XPerlDB.absorb and XPerlDB.absorb.healAbsorb and XPerlDB.absorb.healAbsorb.texture
+														local label = _G[self:GetName().."Name"]
+														if (tex) then
+															if (label) then
+																label:SetText(tex[1] or XPERL_CONF_ABSORB_TEXTURE_DEFAULT)
+															end
+															if (tex[2]) then
+																self:SetNormalTexture(tex[2])
+															end
+														elseif (label) then
+															label:SetText(XPERL_CONF_ABSORB_TEXTURE_DEFAULT)
+														end
+													</OnShow>
+													<OnClick>
+														XPerl_Options_Absorb_OpenTexture("heal")
+													</OnClick>
+												</Scripts>
+											</Button>
+											<Button name="XPerl_Options_Profiles_Absorb_HealColor" inherits="XPerlColorPickerTemplate">
+												<Anchors>
+													<Anchor point="LEFT" relativeTo="XPerl_Options_Profiles_Absorb_HealTexture" relativePoint="RIGHT">
+														<Offset><AbsDimension x="8" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_COLOR")
+													</OnLoad>
+													<OnShow>
+														XPerl_Absorb_EnsureConfig(XPerlDB)
+														local c = XPerlDB.absorb and XPerlDB.absorb.healAbsorb and XPerlDB.absorb.healAbsorb.color
+														if (c) then
+															_G[self:GetName().."_Colour"]:SetVertexColor(c.r, c.g, c.b)
+														end
+													</OnShow>
+													<OnClick>
+														XPerl_Absorb_EnsureConfig(XPerlDB)
+														XPerlLocked = 1
+														XPerl_ColourPicker.ParentFrame = XPerl_Options
+														XPerl_ColourPicker.varGet = function()
+															XPerl_Absorb_EnsureConfig(XPerlDB)
+															return XPerlDB.absorb.healAbsorb.color
+														end
+														XPerl_ColourPicker.varSet = function(n)
+															XPerlDB.absorb.healAbsorb.color.r = n.r
+															XPerlDB.absorb.healAbsorb.color.g = n.g
+															XPerlDB.absorb.healAbsorb.color.b = n.b
+															local sw = _G["XPerl_Options_Profiles_Absorb_HealColor_Colour"]
+															if (sw) then
+																sw:SetVertexColor(n.r, n.g, n.b)
+															end
+															XPerl_Options_Absorb_OnChanged()
+														end
+														XPerl_ColourPicker.alpha = nil
+														XPerl_ColourPicker:Show()
+													</OnClick>
+												</Scripts>
+											</Button>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_HealModeSeparate" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HealTexture" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-1"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_MODE_SEPARATE", true)
+														self.configBase = "XPerlDB.absorb.healAbsorb"
+														self.configIndex = "separateBar"
+														self.configClick = XPerl_Options_Absorb_ModeClick
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<CheckButton name="XPerl_Options_Profiles_Absorb_HealModeOverlay" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_Absorb_HealModeSeparate" relativePoint="TOPLEFT">
+														<Offset><AbsDimension x="138" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_ABSORB_MODE_OVERLAY", true)
+														self.configBase = "XPerlDB.absorb.healAbsorb"
+														self.configIndex = "overlay"
+														self.configClick = XPerl_Options_Absorb_ModeClick
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+										</Frames>
+									</Frame>
+								</Frames>
 							</Frame>
 							<Frame name="XPerl_Options_Profiles_QuadBR">
 								<Anchors>

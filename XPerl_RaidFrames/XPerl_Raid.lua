@@ -138,25 +138,37 @@ end
 
 -- Setup1RaidFrame
 local function Setup1RaidFrame(self)
+	local absorbExtra = (XPerl_Absorb_LayoutExtra and XPerl_Absorb_LayoutExtra(self)) or 0
+	local frameNatural
+	local statsNatural
+
 	if (rconf.mana) then
 		if (not self.statsFrame.manaBar) then
 			CreateManaBar(self)
 		end
 
+		frameNatural = 43
+		statsNatural = 26
 		if (not InCombatLockdown()) then
-			self:SetHeight(43)
+			self:SetHeight(frameNatural + absorbExtra)
 		end
-		self.statsFrame:SetHeight(26)
 		self.statsFrame.manaBar:Show()
 	else
+		frameNatural = 38
+		statsNatural = 21
 		if (not InCombatLockdown()) then
-			self:SetHeight(38)
+			self:SetHeight(frameNatural + absorbExtra)
 		end
-		self.statsFrame:SetHeight(21)
 		if (self.statsFrame.manaBar) then
 			self.statsFrame.manaBar:Hide()
 		end
 	end
+
+	self.xperlNaturalH = frameNatural
+	self.xperlAbsorbLayoutExtra = absorbExtra
+	self.statsFrame.xperlNaturalH = statsNatural
+	self.statsFrame.xperlAbsorbLayoutExtra = absorbExtra
+	self.statsFrame:SetHeight(statsNatural + absorbExtra)
 
 	if (rconf.percent) then
 		self.statsFrame.healthBar.text:Show()
@@ -172,6 +184,10 @@ local function Setup1RaidFrame(self)
 
 	if (XPerl_Voice) then
 		XPerl_Voice:Register(self, true)
+	end
+
+	if (XPerl_SetAbsorbBar) then
+		XPerl_SetAbsorbBar(self)
 	end
 end
 
@@ -473,6 +489,7 @@ function XPerl_Raid_UpdateHealth(self)
 	end
 
 	XPerl_SetExpectedHealth(self)
+	XPerl_SetAbsorbBar(self)
 
 	local name = UnitName(partyid)
 	local myRoster = XPerl_Roster[name]

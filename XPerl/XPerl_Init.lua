@@ -653,22 +653,30 @@ function XPerl_StatsFrameSetup(self, others, offset)
 	end
 
         local healthBar = StatsFrame.healthBar
+	if (not healthBar) then
+		return
+	end
         local healthBarText = healthBar.text
         local healthBarPercent = healthBar.percent
         local manaBar = StatsFrame.manaBar
-        local manaBarPercent = manaBar.percent
+        local manaBarPercent = manaBar and manaBar.percent
 	local otherBars = {}
+	local topBars = {}
 	local secondaryBarsShown = 0
+	local topBarsShown = 0
         local percentSize = 0
-	if (healthBarPercent:IsShown() or manaBarPercent:IsShown()) then
+	if ((healthBarPercent and healthBarPercent:IsShown()) or (manaBarPercent and manaBarPercent:IsShown())) then
 		percentSize = 35
 	end
 
 	offset = (offset or 0)
+
+	self.xperlStatsOthers = others
+	self.xperlStatsOffset = offset
 	
 	healthBar:SetWidth(0)
 
-	if (manaBar:IsShown()) then
+	if (manaBar and manaBar:IsShown()) then
 		secondaryBarsShown = secondaryBarsShown + 1
 		manaBar:SetWidth(0)
 	end
@@ -676,6 +684,18 @@ function XPerl_StatsFrameSetup(self, others, offset)
 	local needTicker = 0
 	if (StatsFrame.energyTicker) then
 		needTicker = 1
+	end
+
+	-- Separate absorb bars sit at the top of the stats block (inside, under nameFrame)
+	if (StatsFrame.xperlAbsorbBar and StatsFrame.xperlAbsorbBar:IsShown()) then
+		tinsert(topBars, StatsFrame.xperlAbsorbBar)
+		topBarsShown = topBarsShown + 1
+		StatsFrame.xperlAbsorbBar:SetWidth(0)
+	end
+	if (StatsFrame.xperlHealAbsorbBar and StatsFrame.xperlHealAbsorbBar:IsShown()) then
+		tinsert(topBars, StatsFrame.xperlHealAbsorbBar)
+		topBarsShown = topBarsShown + 1
+		StatsFrame.xperlHealAbsorbBar:SetWidth(0)
 	end
 
 	if (others) then
@@ -689,23 +709,55 @@ function XPerl_StatsFrameSetup(self, others, offset)
 			end
 		end
 	end
+
+	local topReserve = topBarsShown * 10
+	if (topBarsShown > 0) then
+		topReserve = topReserve + 2
+	end
+
+	-- Height for separate absorb rows comes from XPerl_Absorb (natural + extra)
+	local extra = topReserve
+	if (StatsFrame.xperlNaturalH) then
+		local want = StatsFrame.xperlNaturalH + extra
+		if (math.abs((StatsFrame:GetHeight() or 0) - want) > 0.5) then
+			StatsFrame:SetHeight(want)
+		end
+		StatsFrame.xperlAbsorbLayoutExtra = extra
+	end
 	
 	if (conf.bar.fat) then       
-		if (StatsFrame == XPerl_Player_PetstatsFrame) then
-			healthBarText:SetFontObject(GameFontNormalSmall)
-		else
-			healthBarText:SetFontObject(GameFontNormal)
+		if (healthBarText) then
+			if (StatsFrame == XPerl_Player_PetstatsFrame) then
+				healthBarText:SetFontObject(GameFontNormalSmall)
+			else
+				healthBarText:SetFontObject(GameFontNormal)
+			end
+		end
+
+		local lastTop = nil
+		for i,bar in pairs(topBars) do
+			bar:ClearAllPoints()
+			if (not lastTop) then
+				bar:SetPoint("TOPLEFT", 5, -5)
+				bar:SetPoint("BOTTOMRIGHT", StatsFrame, "TOPRIGHT", -(5 + percentSize), -15)
+			else
+				bar:SetPoint("TOPLEFT", lastTop, "BOTTOMLEFT", 0, 0)
+				bar:SetPoint("BOTTOMRIGHT", lastTop, "BOTTOMRIGHT", 0, -10)
+			end
+			lastTop = bar
 		end
 
         	healthBar:ClearAllPoints()
-        	healthBar:SetPoint("TOPLEFT", 5, -5)
+        	healthBar:SetPoint("TOPLEFT", 5, -5 - topReserve)
         	healthBar:SetPoint("BOTTOMRIGHT", -(5 + percentSize), 5 + needTicker + (secondaryBarsShown * 10))
 
-        	manaBar:ClearAllPoints()
-        	manaBar:SetPoint("BOTTOMLEFT", 5, -5 + needTicker + (secondaryBarsShown * 10))
-        	manaBar:SetPoint("TOPRIGHT", healthBar, "BOTTOMRIGHT", 0, 0)
+		if (manaBar) then
+        		manaBar:ClearAllPoints()
+        		manaBar:SetPoint("BOTTOMLEFT", 5, -5 + needTicker + (secondaryBarsShown * 10))
+        		manaBar:SetPoint("TOPRIGHT", healthBar, "BOTTOMRIGHT", 0, 0)
+		end
 
-		local lastBar = manaBar
+		local lastBar = manaBar or healthBar
 		local tickerSpace = needTicker * 1.5
 		for i,bar in pairs(otherBars) do
 			if (bar:IsShown()) then
@@ -719,17 +771,39 @@ function XPerl_StatsFrameSetup(self, others, offset)
 			end
         	end
 	else
-		healthBarText:SetFontObject(GameFontNormalSmall)
+		if (healthBarText) then
+			healthBarText:SetFontObject(GameFontNormalSmall)
+		end
+
+		local lastTop = nil
+		for i,bar in pairs(topBars) do
+			bar:ClearAllPoints()
+			if (not lastTop) then
+				bar:SetPoint("TOPLEFT", 8, -9 + offset)
+				bar:SetPoint("BOTTOMRIGHT", StatsFrame, "TOPRIGHT", -(8 + percentSize), -19 + offset)
+			else
+				bar:SetPoint("TOPLEFT", lastTop, "BOTTOMLEFT", 0, -2)
+				bar:SetPoint("BOTTOMRIGHT", lastTop, "BOTTOMRIGHT", 0, -12)
+			end
+			lastTop = bar
+		end
 
         	healthBar:ClearAllPoints()
-        	healthBar:SetPoint("TOPLEFT", 8, -9 + offset)
-        	healthBar:SetPoint("BOTTOMRIGHT", StatsFrame, "TOPRIGHT", -(8 + percentSize), -19 + offset)
+		if (lastTop) then
+			healthBar:SetPoint("TOPLEFT", lastTop, "BOTTOMLEFT", 0, -2)
+			healthBar:SetPoint("BOTTOMRIGHT", lastTop, "BOTTOMRIGHT", 0, -12)
+		else
+        		healthBar:SetPoint("TOPLEFT", 8, -9 + offset)
+        		healthBar:SetPoint("BOTTOMRIGHT", StatsFrame, "TOPRIGHT", -(8 + percentSize), -19 + offset)
+		end
 
-        	manaBar:ClearAllPoints()
-        	manaBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, -2)
-        	manaBar:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, -12)
+		if (manaBar) then
+        		manaBar:ClearAllPoints()
+        		manaBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, -2)
+        		manaBar:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, -12)
+		end
 
-		local lastBar = manaBar
+		local lastBar = manaBar or healthBar
 		for i,bar in pairs(otherBars) do
 			if (bar:IsShown()) then
         	        	bar:ClearAllPoints()
