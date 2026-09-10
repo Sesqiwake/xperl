@@ -3858,7 +3858,7 @@
 					<Frame name="$parent_RangeFinder">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
-								<Offset><AbsDimension x="5" y="145"/></Offset>
+								<Offset><AbsDimension x="5" y="125"/></Offset>
 							</Anchor>
 							<Anchor point="BOTTOMRIGHT">
 								<Offset><AbsDimension x="-5" y="5"/></Offset>
@@ -3887,12 +3887,12 @@
 									<Anchors>
 										<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Area_Tabs" relativePoint="BOTTOMLEFT">
 											<Offset>
-												<AbsDimension x="3" y="147"/>
+												<AbsDimension x="3" y="127"/>
 											</Offset>
 										</Anchor>
 										<Anchor point="BOTTOMRIGHT" relativeTo="XPerl_Options_Area_Tabs">
 											<Offset>
-												<AbsDimension x="-3" y="144"/>
+												<AbsDimension x="-3" y="124"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
@@ -4639,11 +4639,10 @@
 						</Scripts>
 					</CheckButton>
 					
-                                        -- added by playerlin 20100820
-                                        <CheckButton name="$parent_XPerlOldRoleIcons" inherits="XPerlCheckButtonTemplate">
+					<CheckButton name="$parent_XPerlOldRoleIcons" inherits="XPerlCheckButtonTemplate">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativeTo="$parent_ShowReadyCheck" relativePoint="BOTTOMLEFT">
-								<Offset><AbsDimension x="-84" y="-6"/></Offset>
+								<Offset><AbsDimension x="0" y="6"/></Offset>
 							</Anchor>
 						</Anchors>
 						<Scripts>
