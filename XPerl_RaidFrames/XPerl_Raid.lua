@@ -949,15 +949,16 @@ end
 function XPerl_Raid_OnUpdate(self, elapsed)
 	if (rosterUpdated) then
 		rosterUpdated = nil
-		if (not InCombatLockdown()) then
+		if (InCombatLockdown()) then
+			-- Cannot touch secure headers in combat; rebuild once OOC.
+			XPerl_QueueOutOfCombat(XPerl_Raid_ApplyStaleAttributes)
+			raidAttributesStale = nil
+		else
 			XPerl_Raid_Position(self)
 			if (raidAttributesStale) then
 				raidAttributesStale = nil
 				XPerl_Raid_ChangeAttributes()
 			end
-		elseif (raidAttributesStale) then
-			XPerl_QueueOutOfCombat(XPerl_Raid_ApplyStaleAttributes)
-			raidAttributesStale = nil
 		end
 		if (XPerl_Custom) then
 			XPerl_Custom:UpdateUnits()
@@ -1213,9 +1214,10 @@ do
 
 	local function NoteRaidRosterChange()
 		local num = GetNumRaidMembers()
-		if (num > 0 and lastRaidSize == 0) then
-			raidAttributesStale = true
-		end
+		-- SecureRaidGroupHeader does not always re-home units after mid-raid
+		-- joins/moves (common on Sirus forced invites). Force attribute refresh
+		-- so group columns match GetRaidRosterInfo once lockdown allows.
+		raidAttributesStale = true
 		lastRaidSize = num
 		rosterUpdated = true		-- Many roster updates can occur during 1 video frame, so we'll check everything at end of last one
 		BuildGuidMap()
