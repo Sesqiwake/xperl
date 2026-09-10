@@ -180,6 +180,8 @@ XPERL_CONF_RANGEFINDER_DESC					= "Затухание любого фрейма 
 end
 XPERL_CONF_RANGEFADEAMOUNT					= "Степень затухание"
 XPERL_CONF_RANGEFADEAMOUNT_DESC				= "Регулировать эффект затухания фреймов от стандартной прозрачности когда кто либо вне досягаемости"
+XPERL_CONF_RANGEUPDATEINTERVAL				= "Интервал проверки"
+XPERL_CONF_RANGEUPDATEINTERVAL_DESC			= "Как часто рейд-фреймы проверяют дистанцию (сек). Больше = меньше нагрузка, медленнее затухание вне досягаемости"
 XPERL_CONF_CUSTOMSPELL						= "Пользовательское заклинание"
 XPERL_CONF_CUSTOMSPELL_DESC					= "Alt-Клик для сброса на стандарт"
 XPERL_CONF_RANGE_MAIN						= "Целый Фрейм"

@@ -3864,7 +3864,7 @@
 							<OnLoad>
 								self:SetScale(0.9)
 								self.Refresh = function(self)
-									local a = {"Enable", "FadeAmount", "CustomSpell", "CombineWithHealth", "RangeHealthAmount", "DebuffCheck", "InteractNone", "Interact10", "Interact30", "Interact40"}
+									local a = {"Enable", "FadeAmount", "UpdateInterval", "CustomSpell", "CombineWithHealth", "RangeHealthAmount", "DebuffCheck", "InteractNone", "Interact10", "Interact30", "Interact40"}
 									for k,v in pairs(a) do
 										local f = _G[self:GetName().."_"..v]
 										if (f) then
@@ -3908,6 +3908,7 @@
 											XPerl_Options_EnableSibling(self,"NameFrame")
 											XPerl_Options_EnableSibling(self,"StatsFrame")
 											XPerl_Options_EnableSibling(self,"Enable")
+											XPerl_Options_EnableSibling(self,"UpdateInterval")
 											XPerl_Options_EnableSibling(self,"InteractNone")
 											XPerl_Options_EnableSibling(self,"Interact10")
 											XPerl_Options_EnableSibling(self,"Interact30")
@@ -3944,11 +3945,48 @@
 								</Scripts>
 							</CheckButton>
 
-							<CheckButton name="$parent_Main" inherits="XPerlRadioButtonTemplate">
+							<Slider name="$parent_UpdateInterval" inherits="XPerlSlider">
+								<Size><AbsDimension x="110" y="16"/></Size>
 								<Anchors>
 									<Anchor point="TOPLEFT" relativeTo="$parent_OnlyInRaid" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="-8"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_SliderSetup(self)
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_RANGEUPDATEINTERVAL")
+										_G[self:GetName().."Low"]:SetText("0.2")
+										_G[self:GetName().."High"]:SetText("1.0")
+										self:SetMinMaxValues(0.2, 1.0)
+										self:SetValueStep(0.1)
+									</OnLoad>
+									<OnShow>
+										if (not XPerlDB.rangeFinder.updateInterval) then
+											XPerlDB.rangeFinder.updateInterval = 0.5
+										end
+										self:SetValue(XPerlDB.rangeFinder.updateInterval)
+										if (XPerlDB.rangeFinder.enabled) then
+											self:EnableSlider()
+										else
+											self:DisableSlider()
+										end
+									</OnShow>
+									<OnValueChanged>
+										local v = floor((value + 0.05) * 10) / 10
+										if (v < 0.2) then v = 0.2 end
+										if (v > 1) then v = 1 end
+										XPerlDB.rangeFinder.updateInterval = v
+										_G[self:GetName().."Current"]:SetText(format("%.1f", v))
+									</OnValueChanged>
+								</Scripts>
+							</Slider>
+
+							<CheckButton name="$parent_Main" inherits="XPerlRadioButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_UpdateInterval" relativePoint="BOTTOMLEFT">
 										<Offset>
-											<AbsDimension x="2" y="5"/>
+											<AbsDimension x="2" y="-6"/>
 										</Offset>
 									</Anchor>
 								</Anchors>

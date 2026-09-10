@@ -2543,6 +2543,7 @@ end
 function XPerl_DefaultRangeFinder()
 	return {						-- 2.1.7
 --		enabled		= e,	-- 2.3.4a Defaulting to OFF now, because of so many confused users complaining about faded frames. RTFM... (TODO: Write a manual)
+		updateInterval	= 0.5,			-- raid OnUpdate range/offline poll (was hard-coded 0.2)
 		Main		= {enabled = true, FadeAmount = 0.5, HealthLowPoint = 0.85},		-- PlusHealth = false,
 		NameFrame	= {FadeAmount = 0.5, HealthLowPoint = 0.85},
 		StatsFrame	= {FadeAmount = 0.5, HealthLowPoint = 0.85},

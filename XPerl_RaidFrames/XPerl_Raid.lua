@@ -977,7 +977,13 @@ function XPerl_Raid_OnUpdate(self, elapsed)
 	local enemyUnitList
 
 	self.time = self.time + elapsed
-	if (self.time >= 0.2) then
+	local interval = (conf and conf.rangeFinder and conf.rangeFinder.updateInterval) or 0.5
+	if (interval < 0.2) then
+		interval = 0.2
+	elseif (interval > 1) then
+		interval = 1
+	end
+	if (self.time >= interval) then
 		self.time = 0
 		someUpdate = true
 	end
