@@ -3974,10 +3974,8 @@
 									</OnShow>
 									<OnValueChanged>
 										local v = floor((value + 0.05) * 10) / 10
-										if (v < 0.2) then v = 0.2 end
-										if (v > 1) then v = 1 end
 										XPerlDB.rangeFinder.updateInterval = v
-										_G[self:GetName().."Current"]:SetText(format("%.1f", v))
+										_G[self:GetName().."Current"]:SetText(string.format("%.1f", v))
 									</OnValueChanged>
 								</Scripts>
 							</Slider>
