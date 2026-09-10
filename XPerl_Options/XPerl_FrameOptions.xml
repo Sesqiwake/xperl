@@ -12202,7 +12202,7 @@
 										</Scripts>
 										<Layers>
 											<Layer level="ARTWORK">
-												<FontString name="XPerl_Options_Profiles_HiddenDebuffs_Title" inherits="GameFontNormalSmall" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS">
+												<FontString name="XPerl_Options_Profiles_HiddenDebuffs_Title" inherits="GameFontNormal" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS">
 													<Anchors>
 														<Anchor point="TOPLEFT">
 															<Offset><AbsDimension x="2" y="-2"/></Offset>

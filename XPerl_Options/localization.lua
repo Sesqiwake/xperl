@@ -823,7 +823,7 @@ XPERL_CONF_ALL_PERCENT_DESC				= "Enable ALL percentage displays"
 XPERL_CONF_ALL_WIDTHBONUS				= "Extra Width"
 XPERL_CONF_ALL_WIDTHBONUS_DESC			= "Adjust the width of all frames"
 
-XPERL_CONF_HIDENDEBUFFS					= "Hide Buffs/Debuffs"
+XPERL_CONF_HIDENDEBUFFS					= "Hide buff/debuff"
 XPERL_CONF_HIDENDEBUFFS_ENABLE			= "Enable"
 XPERL_CONF_HIDENDEBUFFS_ENABLE_DESC		= "Hide selected buffs and debuffs on unit frames below"
 XPERL_CONF_HIDENDEBUFFS_PLAYER			= "Player"

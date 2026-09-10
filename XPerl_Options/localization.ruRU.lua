@@ -822,7 +822,7 @@ XPERL_CONF_ALL_PERCENT_DESC				= "Включает отображение ВСЕ
 XPERL_CONF_ALL_WIDTHBONUS				= "Ширина"
 XPERL_CONF_ALL_WIDTHBONUS_DESC			= "Регулировка ширину всех фреймов"
 
-XPERL_CONF_HIDENDEBUFFS					= "Скрытие бафов/дебафов"
+XPERL_CONF_HIDENDEBUFFS					= "Скрытие баф/дебаф"
 XPERL_CONF_HIDENDEBUFFS_ENABLE			= "Включить"
 XPERL_CONF_HIDENDEBUFFS_ENABLE_DESC		= "Скрывать выбранные баффы и дебаффы на фреймах ниже"
 XPERL_CONF_HIDENDEBUFFS_PLAYER			= "Игрок"
