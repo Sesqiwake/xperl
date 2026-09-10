@@ -279,15 +279,16 @@ local function onEventPostSetup(self, event, unit, ...)
 			XPerl_OutOfCombatOptionSet = nil
 			XPerl_OptionActions()
 		end
-		for k,v in pairs(XPerl_OutOfCombatQueue) do
-			if (type(v) == "function") then
-				v()
-			elseif (type(v) == "table") then
-				v[1](v[2])
-			elseif (type(v) == "string") then
-				RunScript(v)
+		-- Keyed by function (Z-Perl style): one entry per func, last arg wins.
+		for func, arg in pairs(XPerl_OutOfCombatQueue) do
+			if (type(func) == "function") then
+				if (arg == false or arg == nil) then
+					func()
+				else
+					func(arg)
+				end
 			end
-			XPerl_OutOfCombatQueue[k] = nil
+			XPerl_OutOfCombatQueue[func] = nil
 		end
 
 	--elseif (event == "ADDON_ACTION_BLOCKED") then

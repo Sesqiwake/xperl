@@ -683,20 +683,32 @@ end
 -- CheckRaid
 local function CheckRaid()
 	if (InCombatLockdown()) then
-		tinsert(XPerl_OutOfCombatQueue, CheckRaid)
-	else
-		partyAnchor:StopMovingOrSizing()
+		XPerl_QueueOutOfCombat(CheckRaid)
+		return
+	end
+	partyAnchor:StopMovingOrSizing()
 
-		local singleGroup = XPerl_Party_SingleGroup()
-		if (not pconf or (pconf.inRaid or (pconf.smallRaid and singleGroup) or GetNumRaidMembers() == 0)) then
-			if (not partyHeader:IsShown()) then
-				partyHeader:Show()
-			end
-		else
-			if (partyHeader:IsShown()) then
-				partyHeader:Hide()
-			end
+	local singleGroup = XPerl_Party_SingleGroup()
+	if (not pconf or (pconf.inRaid or (pconf.smallRaid and singleGroup) or GetNumRaidMembers() == 0)) then
+		if (not partyHeader:IsShown()) then
+			partyHeader:Show()
 		end
+	else
+		if (partyHeader:IsShown()) then
+			partyHeader:Hide()
+		end
+	end
+end
+
+-- Roster join/leave: visibility + display only (not full layout Set_Bits).
+function XPerl_Party_RosterRefresh()
+	if (InCombatLockdown()) then
+		XPerl_QueueOutOfCombat(XPerl_Party_RosterRefresh)
+		return
+	end
+	CheckRaid()
+	if (XPerl_Party_UpdateDisplayAll) then
+		XPerl_Party_UpdateDisplayAll()
 	end
 end
 
@@ -1179,7 +1191,8 @@ end
 -- XPerl_Party_Set_Bits
 function XPerl_Party_Set_Bits1(self)
 	if (InCombatLockdown()) then
-		tinsert(XPerl_OutOfCombatQueue, {XPerl_Party_Set_Bits1, self})
+		-- One full Set_Bits covers all party slots; do not stack per-frame Set_Bits1.
+		XPerl_QueueOutOfCombat(XPerl_Party_Set_Bits)
 		return
 	end
 
@@ -1499,7 +1512,7 @@ end
 -- XPerl_Party_Set_Bits
 function XPerl_Party_Set_Bits()
 	if (InCombatLockdown()) then
-		tinsert(XPerl_OutOfCombatQueue, XPerl_Party_Set_Bits)
+		XPerl_QueueOutOfCombat(XPerl_Party_Set_Bits)
 		return
 	end
 

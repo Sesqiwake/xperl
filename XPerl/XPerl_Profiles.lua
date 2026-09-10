@@ -365,9 +365,7 @@ end
 
 local function RefreshProfileFrames(snapshot)
 	if (InCombatLockdown()) then
-		tinsert(XPerl_OutOfCombatQueue, function()
-			RefreshProfileFrames(snapshot)
-		end)
+		XPerl_QueueOutOfCombat(RefreshProfileFrames, snapshot)
 		return
 	end
 
@@ -465,9 +463,7 @@ function XPerl_Profiles_Apply(name)
 	end
 
 	if (InCombatLockdown()) then
-		tinsert(XPerl_OutOfCombatQueue, function()
-			DoApplyProfile(snapshot)
-		end)
+		XPerl_QueueOutOfCombat(DoApplyProfile, snapshot)
 	else
 		DoApplyProfile(snapshot)
 	end
