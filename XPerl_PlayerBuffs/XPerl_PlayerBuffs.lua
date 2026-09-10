@@ -112,11 +112,7 @@ function XPerl_PlayerBuffs_OnUpdate(self, elapsed)
 		if (pconf.buffs.enable) then
 			local a = conf.buffs.cooldown
 			conf.buffs.cooldown = pconf.buffs.cooldown
-			if (pconf.buffs.wrap) then
-				XPerl_Unit_UpdateBuffs(XPerl_Player, nil, nil, 0, 0)
-			else
-				XPerl_Unit_UpdateBuffs(XPerl_Player, pconf.buffs.count, pconf.buffs.count, 0, 0)
-			end
+			XPerl_Unit_UpdateBuffs(XPerl_Player, pconf.buffs.count, pconf.buffs.count, 0, 0)
 			XPerl_Player_Buffs_Position(XPerl_Player)
 			conf.buffs.cooldown = a
 
@@ -257,11 +253,7 @@ function XPerl_Player_BuffSetup(self)
 
 	local a = conf.buffs.cooldown
 	conf.buffs.cooldown = pconf.buffs.cooldown
-	if (pconf.buffs.wrap) then
-		XPerl_Unit_UpdateBuffs(XPerl_Player, nil, nil, 0, 0)
-	else
-		XPerl_Unit_UpdateBuffs(XPerl_Player, pconf.buffs.count, pconf.buffs.count, 0, 0)
-	end
+	XPerl_Unit_UpdateBuffs(XPerl_Player, pconf.buffs.count, pconf.buffs.count, 0, 0)
 	conf.buffs.cooldown = a
 
 	self.buffOptMix = nil
