@@ -3354,19 +3354,29 @@ function XPerl_FrameFlashStop(self, method)
 	end
 end
 
--- XPerl_ProtectedCall
-function XPerl_ProtectedCall(func, self)
-	if (func) then
-		if (InCombatLockdown()) then
-			if (self) then
-				tinsert(XPerl_OutOfCombatQueue, {func, self})
-			else
-				tinsert(XPerl_OutOfCombatQueue, func)
-			end
+-- XPerl_ProtectedCall / XPerl_QueueOutOfCombat
+-- Queue is keyed by function so the same secure rebuild is not stacked in combat.
+function XPerl_QueueOutOfCombat(func, arg)
+	if (not func) then
+		return
+	end
+	if (InCombatLockdown()) then
+		if (arg == nil) then
+			XPerl_OutOfCombatQueue[func] = false
 		else
-			func(self)
+			XPerl_OutOfCombatQueue[func] = arg
+		end
+	else
+		if (arg == nil) then
+			func()
+		else
+			func(arg)
 		end
 	end
+end
+
+function XPerl_ProtectedCall(func, self)
+	XPerl_QueueOutOfCombat(func, self)
 end
 
 -- nextMember(last)
@@ -4626,28 +4636,35 @@ do
     partyBootstrap:RegisterEvent("PARTY_MEMBERS_CHANGED")
     partyBootstrap:RegisterEvent("RAID_ROSTER_UPDATE")
 
-    local function SafePartyRebuild()
+    -- Full layout once on load/PEW; roster churn only does light visibility+display.
+    local function SafePartyLayout()
         if type(XPerl_Party_Set_Bits) ~= "function" then return end
-
-        if InCombatLockdown() then
-            tinsert(XPerl_OutOfCombatQueue, XPerl_Party_Set_Bits)
-            return
-        end
-
-        XPerl_Party_Set_Bits()
-
-        if type(XPerl_Party_UpdateDisplayAll) == "function" then
+        XPerl_QueueOutOfCombat(XPerl_Party_Set_Bits)
+        if not InCombatLockdown() and type(XPerl_Party_UpdateDisplayAll) == "function" then
             XPerl_Party_UpdateDisplayAll()
         end
     end
 
-    function partyBootstrap:Schedule(delay)
+    local function SafePartyRoster()
+        if type(XPerl_Party_RosterRefresh) == "function" then
+            XPerl_Party_RosterRefresh()
+            return
+        end
+        SafePartyLayout()
+    end
+
+    function partyBootstrap:Schedule(kind, delay)
+        self._kind = kind
         self._delay = math.max(tonumber(delay) or 0.4, 0.1)
         self:SetScript("OnUpdate", function(s, elapsed)
             s._delay = s._delay - elapsed
             if s._delay <= 0 then
                 s:SetScript("OnUpdate", nil)
-                SafePartyRebuild()
+                if s._kind == "roster" then
+                    SafePartyRoster()
+                else
+                    SafePartyLayout()
+                end
             end
         end)
     end
@@ -4655,17 +4672,17 @@ do
     partyBootstrap:SetScript("OnEvent", function(self, event, arg1)
         if event == "ADDON_LOADED" then
             if arg1 ~= "XPerl_Party" then return end
-            self:Schedule(0.3)
+            self:Schedule("layout", 0.3)
             return
         end
 
         if event == "PLAYER_ENTERING_WORLD" then
-            self:Schedule(0.6)
+            self:Schedule("layout", 0.6)
             return
         end
 
         if event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
-            self:Schedule(0.8)
+            self:Schedule("roster", 0.8)
             return
         end
     end)

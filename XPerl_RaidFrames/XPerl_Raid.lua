@@ -973,10 +973,7 @@ function XPerl_Raid_OnUpdate(self, elapsed)
 				XPerl_Raid_ChangeAttributes()
 			end
 		elseif (raidAttributesStale) then
-			tinsert(XPerl_OutOfCombatQueue, function()
-				XPerl_Raid_ChangeAttributes()
-				XPerl_Raid_Position(XPerl_Raid_Frame)
-			end)
+			XPerl_QueueOutOfCombat(XPerl_Raid_ApplyStaleAttributes)
 			raidAttributesStale = nil
 		end
 		if (XPerl_Custom) then
@@ -2152,10 +2149,15 @@ local function SetMainHeaderAttributes(self)
 end
 
 -- XPerl_Raid_SetAttributes
+function XPerl_Raid_ApplyStaleAttributes()
+	XPerl_Raid_ChangeAttributes()
+	XPerl_Raid_Position(XPerl_Raid_Frame)
+end
+
 function XPerl_Raid_ChangeAttributes()
 
 	if (InCombatLockdown()) then
-		tinsert(XPerl_OutOfCombatQueue, XPerl_Raid_ChangeAttributes)
+		XPerl_QueueOutOfCombat(XPerl_Raid_ChangeAttributes)
 		return
 	end
 
