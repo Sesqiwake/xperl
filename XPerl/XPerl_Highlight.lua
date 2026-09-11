@@ -26,11 +26,9 @@ local new, del, copy = XPerl_GetReusableTable, XPerl_FreeTable, XPerl_CopyTable
 
 local hotSpells  = XPERL_HIGHLIGHT_SPELLS.hotSpells
 local pomSpells = XPERL_HIGHLIGHT_SPELLS.pomSpells
-local shieldSpells = XPERL_HIGHLIGHT_SPELLS.shieldSpells
 
 local colours = {HOT = {r = 0.2, g = 0.4, b = 0.8, canFlash = true},
 		 POM = {r = 0.8, g = 0.6, b = 0.4},
-		 SHIELD = {r = 0.6, g = 0.1, b = 0.6, canFlash = true},
 		 AGGRO = {r = 0.8, g = 0, b = 0},
 		 HEAL = {r = 0.2, g = 0.8, b = 0.2},
 		 SEL = {r = 0.86, g = 0.82, b = 0.41},
@@ -169,7 +167,7 @@ function xpHigh:OnUpdate(elapsed)
 	if (self.rosterUpdate) then
 		self.rosterUpdate = nil
 		self:RefreshAllAuras()			-- New roster, get all
-		if (not (conf.highlight.enable and (conf.highlight.HOT or conf.highlight.SHIELD or conf.highlight.HEAL))) then
+		if (not (conf.highlight.enable and (conf.highlight.HOT or conf.highlight.HEAL))) then
 			self:SetScript("OnUpdate", nil)
 			return
 		end
@@ -240,7 +238,7 @@ function xpHigh:SetHighlight(frame, guid)
 
 	self:OnUpdate(0)
 
-	local hotCount, pomActive, hotBar, hotSparks, showShield
+	local hotCount, pomActive, hotBar, hotSparks
 	if (guid and conf.highlight.enable) then
 		local r = self.list[guid]
 		if (r) then
@@ -1142,10 +1140,6 @@ function xpHigh.clEvents:SPELL_CAST_SUCCESS(timestamp, event, srcGUID, srcName, 
 				if (conf.highlight.HOT) then
 					self:Add(dstGUID, "HOT", hotSpells[spellName])
 				end
-			elseif (shieldSpells[spellName]) then
-				if (conf.highlight.SHIELD) then
-					self:Add(dstGUID, "SHIELD", shieldSpells[spellName])
-				end
 			elseif (pomSpells[spellName]) then
 				if (conf.highlight.POM) then
 					self.expectingPOM = nil
@@ -1241,19 +1235,6 @@ function xpHigh:HasMyPomPom(unit)
 	end
 end
 
--- xpHigh:HasMyShield(unit)
-function xpHigh:HasMyShield(unit)
-	for i = 1,20 do
-		local name, rank, tex, count, buffType, dur, endTime, isMine = UnitBuff(unit, i, "PLAYER")
-		if (not name) then
-			break
-		end
-		if (shieldSpells[name]) then
-			return endTime - GetTime()
-		end
-	end
-end
-
 -- xpHigh:FindMyPomPom()
 function xpHigh:FindMyPomPom()
 	for unit, unitName, unitClass, group in XPerl_NextMember do
@@ -1312,15 +1293,6 @@ function xpHigh:UNIT_AURA(unit)
 			elseif (GetTime() > self.expectingPOM + 2) then
 				self.expectingPOM = nil
 				self:StopMendingAnimation()
-			end
-		end
-	end
-
-	-- Check for pre-mature end of shield buff (Power Word: Shield, Earth Shield)
-	if (playerClass == "SHAMAN") then	-- or playerClass == "PRIEST") then
-		if (self:HasEffect(guid, "SHIELD")) then
-			if (not self:HasMyShield(unit)) then
-				self:Remove(guid, "SHIELD")
 			end
 		end
 	end
@@ -1386,7 +1358,7 @@ function xpHigh:OptionChange()
 	_, playerClass = UnitClass("player")
 	playerName = UnitName("player")
 
-	if (conf.highlight.enable and (conf.highlight.HOT or conf.highlight.SHIELD or conf.highlight.HEAL)) then
+	if (conf.highlight.enable and (conf.highlight.HOT or conf.highlight.HEAL)) then
 		events = true
 		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	else
@@ -1397,9 +1369,7 @@ function xpHigh:OptionChange()
 		self:ClearAll("HOT")
 		self:ClearAll("POM")
 	end
-	if (not conf.highlight.enable or not conf.highlight.SHIELD) then
-		self:ClearAll("SHIELD")
-	end
+	self:ClearAll("SHIELD")
 
 	if (conf.highlight.enable and conf.highlight.HEAL) then
 		events = true
@@ -1433,7 +1403,7 @@ function xpHigh:OptionChange()
 		self:ClearAll("HEAL")
 	end
 
-	if (conf.highlight.enable and (conf.highlight.HOTCOUNT or conf.highlight.HOT or conf.highlight.SHIELD)) then
+	if (conf.highlight.enable and (conf.highlight.HOTCOUNT or conf.highlight.HOT)) then
 		events = true
 		self:RegisterEvent("UNIT_AURA")
 		self:RegisterEvent("RAID_ROSTER_UPDATE")
@@ -1465,7 +1435,7 @@ function xpHigh:OptionChange()
 		self:SetScript("OnEvent", nil)
 	end
 
-	if (conf.highlight.enable and (conf.highlight.HOT or conf.highlight.SHIELD or conf.highlight.HEAL)) then
+	if (conf.highlight.enable and (conf.highlight.HOT or conf.highlight.HEAL)) then
 		self:SetScript("OnUpdate", self.OnUpdate)
 	else
 		self:SetScript("OnUpdate", nil)

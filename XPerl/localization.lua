@@ -162,10 +162,6 @@ XPERL_HIGHLIGHT_SPELLS = {
 	pomSpells = {
 		[GetSpellInfo(33076)] = 30			-- Prayer of Mending
 	},
-	shieldSpells = {
-		--[GetSpellInfo(25218)] = 30,			-- Power Word: Shield
-		[GetSpellInfo(974)] = 600			-- Earth Shield	(old id32594)		-- TODO change me
-	},
 	healSpells = {
 		[GetSpellInfo(2061)] = 1,			-- Flash Heal (old id 25235)
 		[GetSpellInfo(2060)] = 3,			-- Greater Heal (old id 25213)
@@ -246,10 +242,6 @@ XPERL_HIGHLIGHT_SPELLS = {
 	},
 	pomSpells = {
 		[GetSpellInfo(33076)] = 30			-- Prayer of Mending
-	},
-	shieldSpells = {
-		--[GetSpellInfo(25218)] = 30,			-- Power Word: Shield
-		[GetSpellInfo(32594)] = 600			-- Earth Shield			-- TODO change me
 	},
 	healSpells = {
 		[GetSpellInfo(25235)] = 1,			-- Flash Heal
