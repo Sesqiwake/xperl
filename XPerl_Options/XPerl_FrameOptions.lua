@@ -2062,6 +2062,139 @@ function XPerl_Options_Defaults(new)
 	XPerl_MakeDefaultConfig(new)
 end
 
+if (not XPerl_Absorb_Defaults) then
+	function XPerl_Absorb_Defaults()
+		return {
+			enable		= 1,
+			party		= 1,
+			raid		= 1,
+			texture		= {"Default", "Interface\\TargetingFrame\\UI-StatusBar"},
+			color		= {r = 0.4, g = 0.7, b = 1.0},
+			separateBar	= 1,
+			overlay		= nil,
+			healAbsorb	= {
+				enable		= nil,
+				texture		= {"Default", "Interface\\TargetingFrame\\UI-StatusBar"},
+				color		= {r = 0.9, g = 0.2, b = 0.4},
+				separateBar	= nil,
+				overlay		= 1,
+			},
+		}
+	end
+end
+
+if (not XPerl_Absorb_EnsureConfig) then
+	function XPerl_Absorb_EnsureConfig(db)
+		if (not db) then
+			return XPerl_Absorb_Defaults()
+		end
+		if (not db.absorb) then
+			db.absorb = XPerl_Absorb_Defaults()
+		elseif (not db.absorb.healAbsorb) then
+			db.absorb.healAbsorb = XPerl_Absorb_Defaults().healAbsorb
+		end
+		if (db.absorb and not db.absorb.color) then
+			db.absorb.color = XPerl_Absorb_Defaults().color
+		end
+		if (db.absorb and db.absorb.healAbsorb and not db.absorb.healAbsorb.color) then
+			db.absorb.healAbsorb.color = XPerl_Absorb_Defaults().healAbsorb.color
+		end
+		return db.absorb
+	end
+end
+
+function XPerl_Options_Absorb_OnChanged()
+	if (XPerl_Absorb_RefreshAll) then
+		XPerl_Absorb_RefreshAll()
+	end
+end
+
+function XPerl_Options_Absorb_ModeClick(self)
+	local base = self.configBase
+	local idx = self.configIndex
+	if (not base or not idx) then
+		return
+	end
+	local t
+	if (base == "XPerlDB.absorb") then
+		t = XPerlDB.absorb
+	elseif (base == "XPerlDB.absorb.healAbsorb") then
+		t = XPerlDB.absorb and XPerlDB.absorb.healAbsorb
+	end
+	if (not t) then
+		return
+	end
+
+	if (idx == "separateBar") then
+		t.separateBar = 1
+		t.overlay = nil
+	else
+		t.overlay = 1
+		t.separateBar = nil
+	end
+
+	local sep, ovl
+	if (base == "XPerlDB.absorb") then
+		sep = XPerl_Options_Profiles_Absorb_ModeSeparate
+		ovl = XPerl_Options_Profiles_Absorb_ModeOverlay
+	else
+		sep = XPerl_Options_Profiles_Absorb_HealModeSeparate
+		ovl = XPerl_Options_Profiles_Absorb_HealModeOverlay
+	end
+	if (sep) then
+		sep:SetChecked(t.separateBar and true or nil)
+	end
+	if (ovl) then
+		ovl:SetChecked(t.overlay and true or nil)
+	end
+
+	XPerl_Options_Absorb_OnChanged()
+end
+
+function XPerl_Options_Absorb_OpenTexture(kind)
+	local sel = XPerl_Options_TextureSelect
+	if (not sel or not XPerlDB or not XPerlDB.absorb) then
+		return
+	end
+	XPerl_Absorb_EnsureConfig(XPerlDB)
+	sel.list = XPerl_AllBarTextures()
+	local cfg = (kind == "heal") and XPerlDB.absorb.healAbsorb or XPerlDB.absorb
+	local current = cfg and cfg.texture
+	sel.Selection = 1
+	if (current and sel.list) then
+		for k, v in pairs(sel.list) do
+			if (v[1] == current[1] and v[2] == current[2]) then
+				sel.Selection = k
+				break
+			end
+		end
+	end
+	sel.applyFunc = function(entry)
+		if (kind == "heal") then
+			XPerlDB.absorb.healAbsorb.texture = entry
+			local btn = XPerl_Options_Profiles_Absorb_HealTexture
+			if (btn) then
+				local label = _G[btn:GetName().."Name"]
+				if (label) then
+					label:SetText(entry[1])
+				end
+				btn:SetNormalTexture(entry[2])
+			end
+		else
+			XPerlDB.absorb.texture = entry
+			local btn = XPerl_Options_Profiles_Absorb_Texture
+			if (btn) then
+				local label = _G[btn:GetName().."Name"]
+				if (label) then
+					label:SetText(entry[1])
+				end
+				btn:SetNormalTexture(entry[2])
+			end
+		end
+		XPerl_Options_Absorb_OnChanged()
+	end
+	sel:Show()
+end
 
 -- XPerl_Global_ConfigDefault
 local function XPerl_Global_ConfigDefault(default)
@@ -2110,6 +2243,8 @@ local function XPerl_Global_ConfigDefault(default)
 	if (XPerl_HiddenDebuffs_Defaults) then
 		default.hiddenDebuffs = XPerl_HiddenDebuffs_Defaults()
 	end
+
+	default.absorb = XPerl_Absorb_Defaults()
 
 	default.rangeFinder = XPerl_DefaultRangeFinder()
 
@@ -3132,6 +3267,8 @@ if (XPerl_UpgradeSettings) then
 				old.tooltip.enableBuffs = 1
 			end
 		end
+
+		XPerl_Absorb_EnsureConfig(old)
 	end
 
 	-- XPerl_Options_UpgradeSettings()
@@ -3269,4 +3406,8 @@ function XPerl_Options_HiddenDebuffs_RemoveRow(row)
 	if (row and row.spellName and XPerl_HiddenDebuffs_Remove) then
 		XPerl_HiddenDebuffs_Remove(row.spellName)
 	end
+end
+
+if (XPerlDB) then
+	XPerl_Absorb_EnsureConfig(XPerlDB)
 end

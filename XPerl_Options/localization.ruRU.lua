@@ -36,6 +36,24 @@ XPERL_CONF_PROFILES_NOT_FOUND				= "Профиль не найден: %s"
 
 XPERL_CONF_SIRUS_RESERVED				= "Зарезервировано"
 
+XPERL_CONF_ABSORB						= "Поглощения"
+XPERL_CONF_ABSORB_ENABLE				= "Включить"
+XPERL_CONF_ABSORB_ENABLE_DESC			= "Показывать поглощение урона на фреймах (API Sirus)"
+XPERL_CONF_ABSORB_SHOW_ON				= "Показывать так же на:"
+XPERL_CONF_ABSORB_PARTY				= "Группа"
+XPERL_CONF_ABSORB_RAID					= "Рейд"
+XPERL_CONF_ABSORB_DISPLAY				= "Отображение"
+XPERL_CONF_ABSORB_TEXTURE				= "Текстура полосы"
+XPERL_CONF_ABSORB_TEXTURE_DEFAULT		= "По умолч."
+XPERL_CONF_ABSORB_COLOR					= "Цвет полосы"
+XPERL_CONF_ABSORB_COLOR_DESC			= "Выбрать цвет полосы поглощения"
+XPERL_CONF_ABSORB_MODE_SEPARATE			= "Отд. полоса"
+XPERL_CONF_ABSORB_MODE_SEPARATE_DESC		= "Отдельная полоса над здоровьем"
+XPERL_CONF_ABSORB_MODE_OVERLAY			= "На HP"
+XPERL_CONF_ABSORB_MODE_OVERLAY_DESC		= "Наложение на полосу здоровья"
+XPERL_CONF_ABSORB_HEALABSORB			= "Погл. исцеления"
+XPERL_CONF_ABSORB_HEALABSORB_DESC		= "Снижение входящего хила (некротик и т.п.)"
+
 XPERL_CONF_OPTIONS_COLOUR				= "Сменить цвет в окне настроек"
 
 -- Titles

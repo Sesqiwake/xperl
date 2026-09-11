@@ -435,10 +435,19 @@ local function XPerl_Player_DruidBarUpdate(self)
 	end
 
 	local h = 40 + ((druidBarExtra + (pconf.repBar or 0) + (pconf.xpBar or 0)) * 10)
-	if (pconf.extendPortrait and not InCombatLockdown()) then
-		self.portraitFrame:SetHeight(62 + druidBarExtra * 10 + (((pconf.xpBar or 0) + (pconf.repBar or 0)) * 10))
+	local absorbExtra = (XPerl_Absorb_LayoutExtra and XPerl_Absorb_LayoutExtra(self)) or 0
+	local portraitNatural = 62 + druidBarExtra * 10 + (((pconf.xpBar or 0) + (pconf.repBar or 0)) * 10)
+	if (not pconf.extendPortrait) then
+		portraitNatural = 62
 	end
-	self.statsFrame:SetHeight(h)
+	if (not InCombatLockdown()) then
+		self.portraitFrame.xperlNaturalH = portraitNatural
+		self.portraitFrame.xperlAbsorbLayoutExtra = absorbExtra
+		self.portraitFrame:SetHeight(portraitNatural + absorbExtra)
+	end
+	self.statsFrame.xperlNaturalH = h
+	self.statsFrame.xperlAbsorbLayoutExtra = absorbExtra
+	self.statsFrame:SetHeight(h + absorbExtra)
 	XPerl_StatsFrameSetup(self, {druidBar, self.statsFrame.xpBar, self.statsFrame.repBar})
 	if (XPerl_Player_Buffs_Position) then
 		XPerl_Player_Buffs_Position(self)
@@ -986,7 +995,10 @@ function XPerl_Player_SetWidth(self)
 	end
 
 	local h = 40 + ((((self.statsFrame.druidBar and self.statsFrame.druidBar:IsShown()) or 0) + (pconf.repBar or 0) + (pconf.xpBar or 0)) * 10)
-	self.statsFrame:SetHeight(h)
+	local absorbExtra = (XPerl_Absorb_LayoutExtra and XPerl_Absorb_LayoutExtra(self)) or 0
+	self.statsFrame.xperlNaturalH = h
+	self.statsFrame.xperlAbsorbLayoutExtra = absorbExtra
+	self.statsFrame:SetHeight(h + absorbExtra)
 
 	self:SetWidth((pconf.portrait or 0) * 62 + (pconf.percent or 0) * 32 + 124 + pconf.size.width)
 	self:SetScale(pconf.scale)
@@ -1162,21 +1174,21 @@ function XPerl_Player_Set_Bits(self)
 
 	XPerl_Player_SetWidth(self)
 
+	local absorbExtra = (XPerl_Absorb_LayoutExtra and XPerl_Absorb_LayoutExtra(self)) or 0
+	local portraitNatural
+	if (pconf.extendPortrait or (self.runes and pconf.showRunes and pconf.dockRunes)) then
+		portraitNatural = 62 + (((pconf.xpBar or 0) + (pconf.repBar or 0)) * 10)
+	else
+		portraitNatural = 62
+	end
+	self.portraitFrame.xperlNaturalH = portraitNatural
+	self.portraitFrame.xperlAbsorbLayoutExtra = absorbExtra
+	self.portraitFrame:SetHeight(portraitNatural + absorbExtra)
+
 	local h1 = self.nameFrame:GetHeight() + self.statsFrame:GetHeight() - 2
 	local h2 = self.portraitFrame:GetHeight()
 	XPerl_SwitchAnchor(self, "TOPLEFT")
 	self:SetHeight(max(h1, h2))
-
-	self.highlight:ClearAllPoints()
-	if (pconf.extendPortrait or (self.runes and pconf.showRunes and pconf.dockRunes)) then
-		self.portraitFrame:SetHeight(62 + (((pconf.xpBar or 0) + (pconf.repBar or 0)) * 10))
-		--self.highlight:SetPoint("TOPLEFT", self.levelFrame, "TOPLEFT", 0, 0)
-		--self.highlight:SetPoint("BOTTOMRIGHT", self.statsFrame, "BOTTOMRIGHT", 0, 0)
-	else
-		self.portraitFrame:SetHeight(62)
-		--self.highlight:SetPoint("BOTTOMLEFT", self.classFrame, "BOTTOMLEFT", -2, -2)
-		--self.highlight:SetPoint("TOPRIGHT", self.nameFrame, "TOPRIGHT", 0, 0)
-	end
 
 	XPerl_Player_SetupDK(self)
 

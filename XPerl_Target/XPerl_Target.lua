@@ -680,7 +680,11 @@ function XPerl_Target_SetManaType(self)
 			self.statsFrame.manaBar:Hide()
 
 			if (self == XPerl_Target or self == XPerl_Focus) then
-				self.statsFrame:SetHeight(28 + ((conf.bar.fat or 0) * 2))
+				local nh = 28 + ((conf.bar.fat or 0) * 2)
+				local ae = (XPerl_Absorb_LayoutExtra and XPerl_Absorb_LayoutExtra(self)) or 0
+				self.statsFrame.xperlNaturalH = nh
+				self.statsFrame.xperlAbsorbLayoutExtra = ae
+				self.statsFrame:SetHeight(nh + ae)
 				XPerl_StatsFrameSetup(self)
 			end
 		end
@@ -693,7 +697,11 @@ function XPerl_Target_SetManaType(self)
 		self.statsFrame.manaBar:Show()
 		self.statsFrame.manaBar.text:Show()
 		if (self == XPerl_Target or self == XPerl_Focus) then
-			self.statsFrame:SetHeight(40)
+			local nh = 40
+			local ae = (XPerl_Absorb_LayoutExtra and XPerl_Absorb_LayoutExtra(self)) or 0
+			self.statsFrame.xperlNaturalH = nh
+			self.statsFrame.xperlAbsorbLayoutExtra = ae
+			self.statsFrame:SetHeight(nh + ae)
 			XPerl_StatsFrameSetup(self)
 		end
 	end
@@ -1492,6 +1500,22 @@ function XPerl_Target_Set_Bits(self)
 	XPerl_SetBuffSize(self)
 
 	XPerl_Target_SetWidth(self)
+
+	if (not InCombatLockdown()) then
+		local nh = 40
+		if (not self.statsFrame.manaBar:IsShown()) then
+			nh = 28 + ((conf.bar.fat or 0) * 2)
+		end
+		local ae = (XPerl_Absorb_LayoutExtra and XPerl_Absorb_LayoutExtra(self)) or 0
+		self.statsFrame.xperlNaturalH = nh
+		self.statsFrame.xperlAbsorbLayoutExtra = ae
+		self.statsFrame:SetHeight(nh + ae)
+		if (self.portraitFrame) then
+			self.portraitFrame.xperlNaturalH = 62
+			self.portraitFrame.xperlAbsorbLayoutExtra = ae
+			self.portraitFrame:SetHeight(62 + ae)
+		end
+	end
 
 	if (not InCombatLockdown()) then
 		if (self.conf.enable) then

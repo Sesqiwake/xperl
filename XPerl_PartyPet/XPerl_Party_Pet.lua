@@ -232,6 +232,7 @@ function XPerl_Party_Pet_UpdateHealth(self)
 	XPerl_ColourHealthBar(self, healthPct)
 
 	XPerl_SetExpectedHealth(self)
+	XPerl_SetAbsorbBar(self)
 
 	if (UnitIsDead(self.partyid)) then
 		self.statsFrame:SetGrey()

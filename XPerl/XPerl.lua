@@ -746,6 +746,7 @@ function XPerl_SetHealthBar(self, hp, Max)
 		end
 	end
 	XPerl_SetExpectedHealth(self)
+	XPerl_SetAbsorbBar(self)
 end
 
 ---------------------------------
@@ -4119,6 +4120,8 @@ XPerl_UnitHealth = UnitHealth
 XPerl_ExpectedUnitHealth = XPerl_UnitHealth
 function XPerl_SetExpectedHealth()
 end
+
+-- Absorb / heal-absorb bars: XPerl_Absorb.lua (XPerl_SetAbsorbBar)
 
 function XPerl_Load_LQHLHC()
 	if (LibStub or LoadAddOn("LibStub")) then
