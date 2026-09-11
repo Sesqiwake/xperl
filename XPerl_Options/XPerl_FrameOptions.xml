@@ -3562,8 +3562,8 @@
 					<CheckButton name="$parent_BuffCooldownAny" inherits="XPerlCheckButtonTemplate">
 						<Size><AbsDimension x="26" y="26"/></Size>
 						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="$parent_BuffCooldown" relativePoint="TOPRIGHT">
-								<Offset><AbsDimension x="90" y="0"/></Offset>
+							<Anchor point="LEFT" relativeTo="$parent_BuffCooldown" relativePoint="RIGHT">
+								<Offset><AbsDimension x="10" y="0"/></Offset>
 							</Anchor>
 						</Anchors>
 						<Scripts>
@@ -3573,13 +3573,18 @@
 								self.configIndex = "cooldownAny"
 								self.configClick = XPerl_OptionActions
 							</OnLoad>
+							<OnShow>
+								local t = XPerl_Options_GetSibling("BuffCooldown", self)
+								local t2 = _G[t:GetName().."Text"]
+								self:SetPoint("LEFT", t, "RIGHT", t2:GetStringWidth() + 10, 0)
+							</OnShow>
 						</Scripts>
 					</CheckButton>
 
 					<CheckButton name="$parent_BuffCountdown" inherits="XPerlCheckButtonTemplate">
 						<Size><AbsDimension x="26" y="26"/></Size>
 						<Anchors>
-							<Anchor point="TOP" relativeTo="$parent_BuffCooldown" relativePoint="BOTTOMRIGHT">
+							<Anchor point="TOPLEFT" relativeTo="$parent_BuffCooldown" relativePoint="BOTTOMLEFT">
 								<Offset><AbsDimension x="0" y="6"/></Offset>
 							</Anchor>
 						</Anchors>
@@ -3600,8 +3605,8 @@
 					<CheckButton name="$parent_BuffCountdownAny" inherits="XPerlCheckButtonTemplate">
 						<Size><AbsDimension x="26" y="26"/></Size>
 						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="$parent_BuffCountdown" relativePoint="TOPRIGHT">
-								<Offset><AbsDimension x="90" y="0"/></Offset>
+							<Anchor point="TOPLEFT" relativeTo="$parent_BuffCooldownAny" relativePoint="BOTTOMLEFT">
+								<Offset><AbsDimension x="0" y="6"/></Offset>
 							</Anchor>
 						</Anchors>
 						<Scripts>
@@ -3880,7 +3885,7 @@
 					<Frame name="$parent_RangeFinder">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
-								<Offset><AbsDimension x="5" y="105"/></Offset>
+								<Offset><AbsDimension x="5" y="125"/></Offset>
 							</Anchor>
 							<Anchor point="BOTTOMRIGHT">
 								<Offset><AbsDimension x="-5" y="5"/></Offset>
@@ -3891,7 +3896,7 @@
 							<OnLoad>
 								self:SetScale(0.9)
 								self.Refresh = function(self)
-									local a = {"Enable", "FadeAmount", "CustomSpell", "CombineWithHealth", "RangeHealthAmount", "DebuffCheck", "InteractNone", "Interact10", "Interact30", "Interact40"}
+									local a = {"Enable", "FadeAmount", "UpdateInterval", "CustomSpell", "CombineWithHealth", "RangeHealthAmount", "DebuffCheck", "InteractNone", "Interact10", "Interact30", "Interact40"}
 									for k,v in pairs(a) do
 										local f = _G[self:GetName().."_"..v]
 										if (f) then
@@ -3909,12 +3914,12 @@
 									<Anchors>
 										<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Area_Tabs" relativePoint="BOTTOMLEFT">
 											<Offset>
-												<AbsDimension x="3" y="107"/>
+												<AbsDimension x="3" y="127"/>
 											</Offset>
 										</Anchor>
 										<Anchor point="BOTTOMRIGHT" relativeTo="XPerl_Options_Area_Tabs">
 											<Offset>
-												<AbsDimension x="-3" y="104"/>
+												<AbsDimension x="-3" y="124"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
@@ -3935,6 +3940,7 @@
 											XPerl_Options_EnableSibling(self,"NameFrame")
 											XPerl_Options_EnableSibling(self,"StatsFrame")
 											XPerl_Options_EnableSibling(self,"Enable")
+											XPerl_Options_EnableSibling(self,"UpdateInterval")
 											XPerl_Options_EnableSibling(self,"InteractNone")
 											XPerl_Options_EnableSibling(self,"Interact10")
 											XPerl_Options_EnableSibling(self,"Interact30")
@@ -3971,11 +3977,46 @@
 								</Scripts>
 							</CheckButton>
 
-							<CheckButton name="$parent_Main" inherits="XPerlRadioButtonTemplate">
+							<Slider name="$parent_UpdateInterval" inherits="XPerlSlider">
+								<Size><AbsDimension x="110" y="16"/></Size>
 								<Anchors>
 									<Anchor point="TOPLEFT" relativeTo="$parent_OnlyInRaid" relativePoint="BOTTOMLEFT">
+										<Offset><AbsDimension x="0" y="-8"/></Offset>
+									</Anchor>
+								</Anchors>
+								<Scripts>
+									<OnLoad>
+										XPerl_SliderSetup(self)
+										XPerl_OptionsSetMyText(self, "XPERL_CONF_RANGEUPDATEINTERVAL")
+										_G[self:GetName().."Low"]:SetText("0.2")
+										_G[self:GetName().."High"]:SetText("1.0")
+										self:SetMinMaxValues(0.2, 1.0)
+										self:SetValueStep(0.1)
+									</OnLoad>
+									<OnShow>
+										if (not XPerlDB.rangeFinder.updateInterval) then
+											XPerlDB.rangeFinder.updateInterval = 0.5
+										end
+										self:SetValue(XPerlDB.rangeFinder.updateInterval)
+										if (XPerlDB.rangeFinder.enabled) then
+											self:EnableSlider()
+										else
+											self:DisableSlider()
+										end
+									</OnShow>
+									<OnValueChanged>
+										local v = floor((value + 0.05) * 10) / 10
+										XPerlDB.rangeFinder.updateInterval = v
+										_G[self:GetName().."Current"]:SetText(string.format("%.1f", v))
+									</OnValueChanged>
+								</Scripts>
+							</Slider>
+
+							<CheckButton name="$parent_Main" inherits="XPerlRadioButtonTemplate">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeTo="$parent_UpdateInterval" relativePoint="BOTTOMLEFT">
 										<Offset>
-											<AbsDimension x="2" y="5"/>
+											<AbsDimension x="2" y="-6"/>
 										</Offset>
 									</Anchor>
 								</Anchors>
@@ -4014,8 +4055,8 @@
 
 							<CheckButton name="$parent_StatsFrame" inherits="XPerlRadioButtonTemplate">
 								<Anchors>
-									<Anchor point="TOPLEFT" relativeTo="$parent_NameFrame" relativePoint="BOTTOMLEFT">
-										<Offset><AbsDimension x="0" y="3"/></Offset>
+									<Anchor point="LEFT" relativeTo="$parent_NameFrame" relativePoint="RIGHT">
+										<Offset><AbsDimension x="70" y="0"/></Offset>
 									</Anchor>
 								</Anchors>
 								<Scripts>
@@ -4023,6 +4064,11 @@
 										self:SetChecked(false)
 										XPerl_OptionsSetMyText(self, "XPERL_CONF_RANGE_STATSFRAME")
 									</OnLoad>
+									<OnShow>
+										local t = XPerl_Options_GetSibling("NameFrame", self)
+										local t2 = _G[t:GetName().."Text"]
+										self:SetPoint("LEFT", t, "RIGHT", t2:GetStringWidth() + 15, 0)
+									</OnShow>
 									<OnClick>
 										XPerl_Options.optRange = "StatsFrame"
 										XPerl_Options_CheckRadio(self,{"Main", "NameFrame", "StatsFrame"})
@@ -4620,11 +4666,10 @@
 						</Scripts>
 					</CheckButton>
 					
-                                        -- added by playerlin 20100820
-                                        <CheckButton name="$parent_XPerlOldRoleIcons" inherits="XPerlCheckButtonTemplate">
+					<CheckButton name="$parent_XPerlOldRoleIcons" inherits="XPerlCheckButtonTemplate">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativeTo="$parent_ShowReadyCheck" relativePoint="BOTTOMLEFT">
-								<Offset><AbsDimension x="-84" y="-6"/></Offset>
+								<Offset><AbsDimension x="0" y="6"/></Offset>
 							</Anchor>
 						</Anchors>
 						<Scripts>

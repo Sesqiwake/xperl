@@ -197,6 +197,8 @@ XPERL_CONF_RANGEFINDER_DESC				= "Fades any unit frame that is out of spell/item
 end
 XPERL_CONF_RANGEFADEAMOUNT				= "Fade Amount"
 XPERL_CONF_RANGEFADEAMOUNT_DESC			= "Adjust how much to fade frames from the default transparency when out of range"
+XPERL_CONF_RANGEUPDATEINTERVAL			= "Raid Check Interval"
+XPERL_CONF_RANGEUPDATEINTERVAL_DESC		= "How often raid frames re-check distance (seconds). Higher = less CPU, slower out-of-range fade"
 XPERL_CONF_CUSTOMSPELL					= "Custom Spell"
 XPERL_CONF_CUSTOMSPELL_DESC				= "Alt-Click to reset to default"
 XPERL_CONF_RANGE_MAIN					= "Whole Frame"
