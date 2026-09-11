@@ -3320,11 +3320,13 @@ if (XPerl_UpgradeSettings) then
 	end
 end
 
--- Hidden debuffs options UI (loaded with XPerl_Options)
-local HIDENDEBUFF_LIST_ROWS = 5
+-- Hidden buffs/debuffs options UI (loaded with XPerl_Options)
+local HIDENDEBUFF_LIST_ROWS = 6
 local HIDENDEBUFF_ROW_HEIGHT = 14
-local HIDENDEBUFF_LIST_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_List"
-local HIDENDEBUFF_SCROLLBAR = "XPerl_Options_Profiles_HiddenDebuffs_ListScrollBar"
+local HIDENDEBUFF_BUFFS_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_Buffs"
+local HIDENDEBUFF_DEBUFFS_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_Debuffs"
+local HIDENDEBUFF_BUFFS_SCROLL = "XPerl_Options_Profiles_HiddenDebuffs_BuffsScrollBar"
+local HIDENDEBUFF_DEBUFFS_SCROLL = "XPerl_Options_Profiles_HiddenDebuffs_DebuffsScrollBar"
 
 local function HiddenDebuffTrim(s)
 	if (strtrim) then
@@ -3333,46 +3335,101 @@ local function HiddenDebuffTrim(s)
 	return (tostring(s or ""):gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
-local function HiddenDebuffGetRow(i)
-	return _G[HIDENDEBUFF_LIST_PREFIX..i]
+-- string.sub by bytes breaks Cyrillic UTF-8 (shows as "?"); chop whole codepoints
+local function HiddenAuraUtf8ChopLast(s)
+	local len = string.len(s)
+	if (len == 0) then
+		return s
+	end
+	local i = len
+	while (i > 1) do
+		local b = string.byte(s, i)
+		if (b < 128 or b >= 192) then
+			break
+		end
+		i = i - 1
+	end
+	return string.sub(s, 1, i - 1)
 end
 
-function XPerl_Options_HiddenDebuffs_FillList()
+local function HiddenAuraSetTruncatedText(fs, text, maxWidth)
+	fs:SetText(text)
+	if (not maxWidth or maxWidth < 8 or fs:GetStringWidth() <= maxWidth) then
+		return
+	end
+	local name = text
+	while (string.len(name) > 0 and fs:GetStringWidth() > maxWidth) do
+		name = HiddenAuraUtf8ChopLast(name)
+		if (string.len(name) == 0) then
+			fs:SetText("..")
+			return
+		end
+		fs:SetText(name.."..")
+	end
+end
+
+local function HiddenAuraRowMaxTextWidth(row)
+	-- Do not use nameText:GetWidth() — after truncation it follows string width and shrinks each scroll refill
+	if (row._maxTextW and row._maxTextW >= 40) then
+		return row._maxTextW
+	end
+	local remove = _G[row:GetName().."_Remove"]
+	local rowW = row:GetWidth()
+	if (not rowW or rowW < 8) then
+		local parent = row:GetParent()
+		rowW = parent and parent:GetWidth() or 0
+	end
+	local btnW = (remove and remove:GetWidth()) or 16
+	local maxW = rowW - btnW - 6
+	if (maxW >= 40) then
+		row._maxTextW = maxW
+		if (row.nameText) then
+			row.nameText:SetWidth(maxW)
+		end
+	end
+	return maxW
+end
+
+local function HiddenAuraFillColumn(prefix, scrollName, isDebuff)
 	if (not XPerl_HiddenDebuffs_GetSortedList) then
 		return
 	end
-	local names = XPerl_HiddenDebuffs_GetSortedList()
-	local scroll = _G[HIDENDEBUFF_SCROLLBAR]
+	local rows = XPerl_HiddenDebuffs_GetSortedList(isDebuff)
+	local scroll = _G[scrollName]
 	local offset = 0
 	if (scroll) then
 		offset = FauxScrollFrame_GetOffset(scroll) or 0
 	end
 	for i = 1, HIDENDEBUFF_LIST_ROWS do
-		local row = HiddenDebuffGetRow(i)
+		local row = _G[prefix..i]
 		if (row) then
-			local name = names[offset + i]
-			if (name) then
+			local entry = rows[offset + i]
+			row.isDebuff = isDebuff and true or false
+			if (entry) then
 				row:Show()
+				row.spellKey = entry.key
+				row.spellName = entry.name
 				if (row.nameText) then
-					row.nameText:SetText(name)
+					HiddenAuraSetTruncatedText(row.nameText, entry.name, HiddenAuraRowMaxTextWidth(row))
 				end
-				row.spellName = name
 			else
 				row:Hide()
+				row.spellKey = nil
 				row.spellName = nil
 			end
 		end
 	end
 	if (scroll) then
-		FauxScrollFrame_Update(scroll, #names, HIDENDEBUFF_LIST_ROWS, HIDENDEBUFF_ROW_HEIGHT)
+		FauxScrollFrame_Update(scroll, #rows, HIDENDEBUFF_LIST_ROWS, HIDENDEBUFF_ROW_HEIGHT)
 		if (scroll.bar) then
-			if (#names > HIDENDEBUFF_LIST_ROWS) then
-				scroll.bar:Show()
-			else
-				scroll.bar:Hide()
-			end
+			scroll.bar:Hide()
 		end
 	end
+end
+
+function XPerl_Options_HiddenDebuffs_FillList()
+	HiddenAuraFillColumn(HIDENDEBUFF_BUFFS_PREFIX, HIDENDEBUFF_BUFFS_SCROLL, false)
+	HiddenAuraFillColumn(HIDENDEBUFF_DEBUFFS_PREFIX, HIDENDEBUFF_DEBUFFS_SCROLL, true)
 end
 
 function XPerl_Options_HiddenDebuffs_OnShow()
@@ -3382,9 +3439,13 @@ function XPerl_Options_HiddenDebuffs_OnShow()
 	if (XPerl_HiddenDebuffs_EnsureConfig) then
 		XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
 	end
-	local scroll = _G[HIDENDEBUFF_SCROLLBAR]
-	if (scroll) then
-		FauxScrollFrame_SetOffset(scroll, 0)
+	local buffScroll = _G[HIDENDEBUFF_BUFFS_SCROLL]
+	if (buffScroll) then
+		FauxScrollFrame_SetOffset(buffScroll, 0)
+	end
+	local debuffScroll = _G[HIDENDEBUFF_DEBUFFS_SCROLL]
+	if (debuffScroll) then
+		FauxScrollFrame_SetOffset(debuffScroll, 0)
 	end
 	XPerl_Options_HiddenDebuffs_FillList()
 end
@@ -3393,18 +3454,22 @@ function XPerl_Options_HiddenDebuffs_AddManual(editBox)
 	if (not editBox or not XPerl_HiddenDebuffs_Add) then
 		return
 	end
-	local name = HiddenDebuffTrim(editBox:GetText())
-	if (name == "") then
+	local text = HiddenDebuffTrim(editBox:GetText())
+	if (text == "") then
 		return
 	end
-	if (XPerl_HiddenDebuffs_Add(name)) then
+	-- Manual ID entry defaults to debuffs; use Ctrl+Shift on a buff icon for buffs
+	if (XPerl_HiddenDebuffs_Add(text, nil, true)) then
 		editBox:SetText("")
 	end
 end
 
 function XPerl_Options_HiddenDebuffs_RemoveRow(row)
-	if (row and row.spellName and XPerl_HiddenDebuffs_Remove) then
-		XPerl_HiddenDebuffs_Remove(row.spellName)
+	if (row and XPerl_HiddenDebuffs_Remove) then
+		local key = row.spellKey or row.spellName
+		if (key ~= nil) then
+			XPerl_HiddenDebuffs_Remove(key, row.isDebuff and true or false)
+		end
 	end
 end
 
