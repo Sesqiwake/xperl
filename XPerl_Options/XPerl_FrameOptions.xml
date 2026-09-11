@@ -3681,7 +3681,6 @@
 									XPerl_Options_EnableSibling(self,"HighlightHoTs")
 									XPerl_Options_EnableSibling(self,"HighlightHEAL")
 									XPerl_Options_EnableSibling(self,"HighlightAggro")
-									XPerl_Options_EnableSibling(self,"HighlightShields")
 									XPerl_Options_EnableSibling(self,"HighlightHotcount")
 									XPerl_Options_EnableSibling(self,"HighlightTarget")
 									XPerl_Options_EnableSibling(self,"HighlightMending")
@@ -3692,10 +3691,6 @@
 									if (class ~= "DRUID" and class ~= "PRIEST" and class ~= "SHAMAN") then
 										XPerlDB.highlight.HOT = nil
 										XPerl_Options_EnableCheck(XPerl_Options_GetSibling("HighlightHoTs",self), false)
-									end
-									if (class ~= "PRIEST" and class ~= "SHAMAN" and class ~= "MAGE" and class ~= "PALADIN") then
-										XPerlDB.highlight.SHIELD = nil
-										XPerl_Options_EnableCheck(XPerl_Options_GetSibling("HighlightShields",self), false)
 									end
 									if (class ~= "PRIEST") then
 										XPerlDB.highlight.POM = nil
@@ -3770,22 +3765,6 @@
 						</Scripts>
 					</CheckButton>
 
-					<CheckButton name="$parent_HighlightShields" inherits="XPerlCheckButtonTemplate">
-						<Size><AbsDimension x="26" y="26"/></Size>
-						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="$parent_HighlightAggro" relativePoint="BOTTOMLEFT">
-								<Offset><AbsDimension x="0" y="6"/></Offset>
-							</Anchor>
-						</Anchors>
-						<Scripts>
-							<OnLoad>
-								XPerl_OptionsSetMyText(self, "XPERL_CONF_RAID_HIGHLIGHTS_SHIELDS")
-								self.configBase = "XPerlDB.highlight"
-								self.configIndex = "SHIELD"
-							</OnLoad>
-						</Scripts>
-					</CheckButton>
-
 					<CheckButton name="$parent_HighlightTarget" inherits="XPerlCheckButtonTemplate">
 						<Size><AbsDimension x="26" y="26"/></Size>
 						<Anchors>
@@ -3805,7 +3784,7 @@
 					<CheckButton name="$parent_HighlightMending" inherits="XPerlCheckButtonTemplate">
 						<Size><AbsDimension x="26" y="26"/></Size>
 						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="$parent_HighlightShields" relativePoint="BOTTOMLEFT">
+							<Anchor point="TOPLEFT" relativeTo="$parent_HighlightAggro" relativePoint="BOTTOMLEFT">
 								<Offset><AbsDimension x="0" y="6"/></Offset>
 							</Anchor>
 						</Anchors>

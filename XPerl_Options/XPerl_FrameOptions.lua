@@ -1616,7 +1616,6 @@ function XPerl_Options_ImportOldConfig(old)
 		highlight = {
 			enable			= Convert(old.RaidHighlights),
 			HOT			= Convert(old.RaidHighlightHoTs),
-			SHIELD			= Convert(old.RaidHighlightShields),
 			AGGRO			= Convert(old.RaidHighlightAggro),
 			MISSING			= Convert(old.RaidHighlightMissing),
 			all			= Convert(old.RaidHighlightMissingAll),
@@ -2144,7 +2143,6 @@ local function XPerl_Global_ConfigDefault(default)
 	default.highlight = {
 		enable			= 1,
 		HOT			= 1,
-		SHIELD			= 1,
 		AGGRO			= 1,
 --		MISSING			= nil,
 --		all			= nil,
