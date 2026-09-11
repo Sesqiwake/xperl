@@ -4183,9 +4183,12 @@ function XPerl_Load_LQHLHC()
 			end
 		end
 
-		-- HealComm interface
-		LoadAddOn("LibHealComm-4.0")
+		-- HealComm interface (LibHealComm-4.0 embedded in XPerl/libs; LoadAddOn keeps OptionalDeps fallback)
 		local HealComm4 = LibStub and LibStub("LibHealComm-4.0", true)
+		if (not HealComm4) then
+			LoadAddOn("LibHealComm-4.0")
+			HealComm4 = LibStub and LibStub("LibHealComm-4.0", true)
+		end
 		local HealComm3
 		if (not HealComm4) then
 			LoadAddOn("LibHealComm-3.0")

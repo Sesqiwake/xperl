@@ -21,5 +21,6 @@
 ## X-Curse-Project-Name: X-Perl UnitFrames
 ## X-Curse-Project-ID: xperl
 ## X-Curse-Repository-ID: wow/xperl/salushyjal-r879fix
+libs\embeds.xml
 XPerl_Globals.xml
 XPerl.xml
