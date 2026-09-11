@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.2.0
 ## Title: X-Perl |cffeda55fRaid Pets|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fПитомцы рейда|r
 ## Title-zhCN: X-Perl |cffeda55f团队宠物窗|r
@@ -8,6 +9,8 @@
 ## Notes-zhTW: 顯示 X-Perl 團隊寵物框架
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_RaidPets
+## X-Sirus-Category: 16
 ## Dependencies: XPerl_RaidFrames
 ## X-Curse-Packaged-Version: 3.1 beta 1
 ## X-Curse-Project-Name: X-Perl UnitFrames

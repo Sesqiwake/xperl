@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.2.0
 ## Title: X-Perl |cffeda55fArcane Bars|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fПолосы применений|r
 ## Title-zhCN: X-Perl |cffeda55f施法条|r
@@ -9,6 +10,8 @@
 ## Notes-zhTW: 給予玩家, 寵物, 目標, focus 以及隊伍框架施法條進度顯示.
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_ArcaneBar
+## X-Sirus-Category: 16
 ## RequiredDeps: XPerl
 ## X-Curse-Packaged-Version: 3.1 beta 1
 ## X-Curse-Project-Name: X-Perl UnitFrames

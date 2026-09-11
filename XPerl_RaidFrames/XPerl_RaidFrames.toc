@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.2.0
 ## Title: X-Perl |cffeda55fRaidFrames|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fРейд|r
 ## Title-zhCN: X-Perl |cffeda55f团队窗|r
@@ -9,6 +10,8 @@
 ## Notes-zhTW: X-Perl 團隊框架
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_RaidFrames
+## X-Sirus-Category: 16
 ## Dependencies: XPerl
 ## SavedVariablesPerCharacter: XPerl_Roster
 ## X-Curse-Packaged-Version: 3.1 beta 1

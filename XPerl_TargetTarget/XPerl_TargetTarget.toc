@@ -1,4 +1,5 @@
 ﻿## Interface: 30300
+## Version: 3.2.0
 ## Title: X-Perl |cffeda55fTarget's Target|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fЦель цели|r
 ## Title-zhCN: X-Perl |cffeda55f目标的目标窗|r
@@ -9,6 +10,8 @@
 ## Notes-zhTW: 顯示目標的目標框架.
 ## Author: Zek
 ## X-License: GNU GPL v3, 29 June 2007
+## X-Sirus-Update: https://github.com/Sesqiwake/xperl/tree/main/XPerl_TargetTarget
+## X-Sirus-Category: 16
 ## RequiredDeps: XPerl, XPerl_Target
 ## X-Curse-Packaged-Version: 3.1 beta 1
 ## X-Curse-Project-Name: X-Perl UnitFrames
