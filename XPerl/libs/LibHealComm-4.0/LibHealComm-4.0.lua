@@ -1626,6 +1626,8 @@ end
 
 local alreadyAdded = {}
 function HealComm:UNIT_AURA(unit)
+	-- Sirus/3.3.5: UNIT_AURA can fire without unit; UnitGUID(nil) → Usage error
+	if( not unit ) then return end
 	local guid = UnitGUID(unit)
 	if( not guidToUnit[guid] ) then return end
 	local increase, decrease, playerIncrease, playerDecrease = 1, 1, 1, 1
@@ -2367,6 +2369,8 @@ end
 
 -- It's faster to do heal delays locally rather than through syncing, as it only has to go from WoW -> Player instead of Caster -> WoW -> Player
 function HealComm:UNIT_SPELLCAST_DELAYED(unit, spellName, spellRank, id)
+	-- Same as UNIT_AURA: UnitGUID rejects nil unit
+	if( not unit ) then return end
 	local casterGUID = UnitGUID(unit)
 	if( unit == "focus" or unit == "target" or not pendingHeals[casterGUID] or not pendingHeals[casterGUID][spellName] ) then return end
 	
