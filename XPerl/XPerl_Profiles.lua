@@ -292,6 +292,8 @@ function XPerl_Profiles_Capture()
 		snapshot.absorb = CopyTable(XPerlDB.absorb)
 	end
 
+	snapshot.healPrediction = XPerlDB.healPrediction
+
 	if (XPerl_HiddenDebuffs_EnsureConfig) then
 		XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
 	end
@@ -454,6 +456,15 @@ local function DoApplyProfile(snapshot)
 		if (XPerl_Absorb_RefreshAll) then
 			XPerl_Absorb_RefreshAll()
 		end
+	end
+
+	if (snapshot.healPrediction ~= nil) then
+		XPerlDB.healPrediction = snapshot.healPrediction
+	elseif (XPerlDB.healPrediction == nil) then
+		XPerlDB.healPrediction = 1
+	end
+	if (XPerl_HealPrediction_RefreshAll) then
+		XPerl_HealPrediction_RefreshAll()
 	end
 
 	if (snapshot.hiddenDebuffs) then

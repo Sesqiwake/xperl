@@ -4355,6 +4355,10 @@ function XPerl_Load_LQHLHC()
 
 			-- XPerl_ExpectedUnitHealth
 			function XPerl_ExpectedUnitHealth(unit)
+				-- UnitHealth/UnitGUID reject nil (Usage error); empty party slots have partyid = nil
+				if (not unit) then
+					return 0
+				end
 				local health = XPerl_UnitHealth(unit)
 				if (HealComm3) then
 					local incoming = HealComm3:UnitIncomingHealGet(unit, GetTime() + 100) or 0
@@ -4376,16 +4380,48 @@ function XPerl_Load_LQHLHC()
 
 			-- XPerl_SetExpectedHealth
 			function XPerl_SetExpectedHealth(self)
-				local bar = self.statsFrame.expectedHealth
-				if (bar) then
-					local expectedHealth = XPerl_ExpectedUnitHealth(self.partyid)
-					if (expectedHealth == XPerl_UnitHealth(self.partyid)) then
-						bar:Hide()
-					else
-						local healthMax = UnitHealthMax(self.partyid)
-						bar:Show()
-						bar:SetMinMaxValues(0, healthMax)
-						bar:SetValue(expectedHealth)
+				local bar = self.statsFrame and self.statsFrame.expectedHealth
+				if (not bar) then
+					return
+				end
+				if (not conf or conf.healPrediction ~= 1) then
+					bar:Hide()
+					return
+				end
+				local unit = self.partyid
+				if (not unit) then
+					bar:Hide()
+					return
+				end
+				local expectedHealth = XPerl_ExpectedUnitHealth(unit)
+				if (expectedHealth == XPerl_UnitHealth(unit)) then
+					bar:Hide()
+				else
+					local healthMax = UnitHealthMax(unit)
+					bar:Show()
+					bar:SetMinMaxValues(0, healthMax)
+					bar:SetValue(expectedHealth)
+				end
+			end
+
+			function XPerl_HealPrediction_RefreshAll()
+				local function bump(frame)
+					if (frame and frame.partyid) then
+						XPerl_SetExpectedHealth(frame)
+					end
+				end
+				bump(XPerl_Player)
+				bump(XPerl_Player_Pet)
+				bump(XPerl_Target)
+				bump(XPerl_Focus)
+				bump(XPerl_TargetTarget)
+				for i = 1, 4 do
+					bump(_G["XPerl_party"..i])
+					bump(_G["XPerl_partypet"..i])
+				end
+				if (GetNumRaidMembers() > 0 and XPerl_Raid_GetUnitFrameByUnit) then
+					for i = 1, GetNumRaidMembers() do
+						bump(XPerl_Raid_GetUnitFrameByUnit("raid"..i))
 					end
 				end
 			end
