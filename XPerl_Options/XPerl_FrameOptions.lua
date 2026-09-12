@@ -3320,12 +3320,15 @@ if (XPerl_UpgradeSettings) then
 end
 
 -- Hidden buffs/debuffs options UI (loaded with XPerl_Options)
-local HIDENDEBUFF_LIST_ROWS = 6
+local HIDENDEBUFF_LIST_ROWS = 5
 local HIDENDEBUFF_ROW_HEIGHT = 14
 local HIDENDEBUFF_BUFFS_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_Buffs"
 local HIDENDEBUFF_DEBUFFS_PREFIX = "XPerl_Options_Profiles_HiddenDebuffs_Debuffs"
 local HIDENDEBUFF_BUFFS_SCROLL = "XPerl_Options_Profiles_HiddenDebuffs_BuffsScrollBar"
 local HIDENDEBUFF_DEBUFFS_SCROLL = "XPerl_Options_Profiles_HiddenDebuffs_DebuffsScrollBar"
+
+-- Manual add kind: true = debuff list (default), false = buff list
+local hiddenAuraManualIsDebuff = true
 
 local function HiddenDebuffTrim(s)
 	if (strtrim) then
@@ -3446,7 +3449,31 @@ function XPerl_Options_HiddenDebuffs_OnShow()
 	if (debuffScroll) then
 		FauxScrollFrame_SetOffset(debuffScroll, 0)
 	end
+	XPerl_Options_HiddenDebuffs_SyncKindChecks()
 	XPerl_Options_HiddenDebuffs_FillList()
+end
+
+function XPerl_Options_HiddenDebuffs_SyncKindChecks()
+	local buff = XPerl_Options_Profiles_HiddenDebuffs_AddBuff
+	local debuff = XPerl_Options_Profiles_HiddenDebuffs_AddDebuff
+	if (buff) then
+		buff:SetChecked(not hiddenAuraManualIsDebuff)
+	end
+	if (debuff) then
+		debuff:SetChecked(hiddenAuraManualIsDebuff)
+	end
+end
+
+function XPerl_Options_HiddenDebuffs_KindClick(self)
+	if (not self) then
+		return
+	end
+	if (self.configIndex == "addBuff") then
+		hiddenAuraManualIsDebuff = false
+	else
+		hiddenAuraManualIsDebuff = true
+	end
+	XPerl_Options_HiddenDebuffs_SyncKindChecks()
 end
 
 function XPerl_Options_HiddenDebuffs_AddManual(editBox)
@@ -3457,8 +3484,7 @@ function XPerl_Options_HiddenDebuffs_AddManual(editBox)
 	if (text == "") then
 		return
 	end
-	-- Manual ID entry defaults to debuffs; use Ctrl+Shift on a buff icon for buffs
-	if (XPerl_HiddenDebuffs_Add(text, nil, true)) then
+	if (XPerl_HiddenDebuffs_Add(text, nil, hiddenAuraManualIsDebuff)) then
 		editBox:SetText("")
 	end
 end

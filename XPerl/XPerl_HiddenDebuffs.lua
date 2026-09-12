@@ -178,9 +178,48 @@ function XPerl_HiddenDebuffs_ParseInput(text)
 		return tonumber(linkId)
 	end
 	local asNumber = tonumber(text)
-	if (asNumber and asNumber > 0) then
+	if (asNumber and asNumber > 0 and strmatch(text, "^%s*%d+%s*$")) then
 		return asNumber
 	end
+end
+
+-- Returns key (number spellId or string name), displayName. Nil key = reject.
+function XPerl_HiddenDebuffs_ResolveManual(text)
+	text = strtrim(text or "")
+	if (text == "") then
+		return
+	end
+
+	local linkId = strmatch(text, "spell:(%d+)")
+	if (linkId) then
+		local id = tonumber(linkId)
+		if (not id or id <= 0) then
+			return
+		end
+		local name = GetSpellInfo(id)
+		if (not name or name == "") then
+			return
+		end
+		return id, name
+	end
+
+	if (strmatch(text, "^%s*%d+%s*$")) then
+		local id = tonumber(text)
+		if (not id or id <= 0) then
+			return
+		end
+		local name = GetSpellInfo(id)
+		if (not name or name == "") then
+			return
+		end
+		return id, name
+	end
+
+	local known = GetSpellInfo(text)
+	if (known and known ~= "") then
+		return known, known
+	end
+	return text, text
 end
 
 function XPerl_HiddenDebuffs_DisplayName(spellId, fallbackName)
@@ -254,25 +293,33 @@ function XPerl_HiddenDebuffs_Add(spellIdOrText, displayName, isDebuff)
 		isDebuff = true
 	end
 
-	local spellId = spellIdOrText
-	if (type(spellId) ~= "number") then
-		spellId = XPerl_HiddenDebuffs_ParseInput(spellIdOrText)
+	local key, shown
+	if (type(spellIdOrText) == "number") then
+		key = spellIdOrText
+		if (not key or key <= 0 or not GetSpellInfo(key)) then
+			return false
+		end
+		shown = XPerl_HiddenDebuffs_DisplayName(key, displayName)
+	else
+		key, shown = XPerl_HiddenDebuffs_ResolveManual(spellIdOrText)
+		if (displayName and displayName ~= "") then
+			shown = displayName
+		end
 	end
-	if (not spellId or spellId <= 0) then
+	if (key == nil or key == "") then
 		return false
 	end
-	spellId = tonumber(spellId)
 
 	local cfg = XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
 	local list = GetAuraList(cfg, isDebuff)
-	if (list[spellId]) then
+	if (list[key]) then
 		return false
 	end
-	list[spellId] = true
+	list[key] = true
 	nameLookupDirty = true
 	RebuildNameLookups(cfg)
 
-	local shown = XPerl_HiddenDebuffs_DisplayName(spellId, displayName)
+	shown = shown or XPerl_HiddenDebuffs_DisplayName(key, displayName)
 	local msg
 	if (isDebuff) then
 		msg = _G.XPERL_CONF_HIDENDEBUFFS_ADDED

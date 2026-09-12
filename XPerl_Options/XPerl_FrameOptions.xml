@@ -12375,53 +12375,6 @@
 													</OnLoad>
 												</Scripts>
 											</CheckButton>
-											<Button name="XPerl_Options_Profiles_HiddenDebuffs_AddBtn" inherits="XPerlButtonTemplate">
-												<Anchors>
-													<Anchor point="BOTTOMRIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
-														<Offset><AbsDimension x="-6" y="3"/></Offset>
-													</Anchor>
-												</Anchors>
-												<Scripts>
-													<OnLoad>
-														XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_ADD")
-													</OnLoad>
-													<OnClick>
-														XPerl_Options_HiddenDebuffs_AddManual(XPerl_Options_Profiles_HiddenDebuffs_AddEdit)
-													</OnClick>
-												</Scripts>
-											</Button>
-											<EditBox name="XPerl_Options_Profiles_HiddenDebuffs_AddEdit" autoFocus="false" letters="64" inherits="XPerlOptEditBox">
-												<Size><AbsDimension x="1" y="20"/></Size>
-												<Anchors>
-													<Anchor point="BOTTOMLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
-														<Offset><AbsDimension x="6" y="3"/></Offset>
-													</Anchor>
-													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_AddBtn" relativePoint="LEFT">
-														<Offset><AbsDimension x="-4" y="0"/></Offset>
-													</Anchor>
-												</Anchors>
-											</EditBox>
-											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_HintArea">
-												<Size><AbsDimension x="1" y="12"/></Size>
-												<Anchors>
-													<Anchor point="BOTTOMLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_AddEdit" relativePoint="TOPLEFT">
-														<Offset><AbsDimension x="0" y="1"/></Offset>
-													</Anchor>
-													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
-														<Offset><AbsDimension x="-2" y="0"/></Offset>
-													</Anchor>
-												</Anchors>
-												<Layers>
-													<Layer level="ARTWORK">
-														<FontString inherits="GameFontDisableSmall" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS_HINT">
-															<Anchors>
-																<Anchor point="TOPLEFT"/>
-																<Anchor point="TOPRIGHT"/>
-															</Anchors>
-														</FontString>
-													</Layer>
-												</Layers>
-											</Frame>
 											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_ColHeaders">
 												<Size><AbsDimension x="1" y="12"/></Size>
 												<Anchors>
@@ -12458,12 +12411,12 @@
 												</Layers>
 											</Frame>
 											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_List">
+												<Size>
+													<AbsDimension x="1" y="78"/>
+												</Size>
 												<Anchors>
 													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_ColHeaders" relativePoint="BOTTOMLEFT">
 														<Offset><AbsDimension x="0" y="-1"/></Offset>
-													</Anchor>
-													<Anchor point="BOTTOMLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_HintArea" relativePoint="TOPLEFT">
-														<Offset><AbsDimension x="0" y="2"/></Offset>
 													</Anchor>
 													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
 														<Offset><AbsDimension x="-2" y="0"/></Offset>
@@ -12587,18 +12540,6 @@
 																			</OnLoad>
 																		</Scripts>
 																	</Frame>
-																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Buffs6" inherits="XPerlHiddenDebuffRowTemplate" id="6" hidden="true">
-																		<Anchors>
-																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Buffs5" relativePoint="BOTTOMLEFT"/>
-																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_BuffsInner"/>
-																		</Anchors>
-																		<Scripts>
-																			<OnLoad>
-																				self.nameText = _G[self:GetName().."Name"]
-																				self.isDebuff = false
-																			</OnLoad>
-																		</Scripts>
-																	</Frame>
 																</Frames>
 															</Frame>
 															<ScrollFrame name="XPerl_Options_Profiles_HiddenDebuffs_BuffsScrollBar" inherits="FauxScrollFrameTemplate" enableMouse="false" hidden="true">
@@ -12713,18 +12654,6 @@
 																			</OnLoad>
 																		</Scripts>
 																	</Frame>
-																	<Frame name="XPerl_Options_Profiles_HiddenDebuffs_Debuffs6" inherits="XPerlHiddenDebuffRowTemplate" id="6" hidden="true">
-																		<Anchors>
-																			<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_Debuffs5" relativePoint="BOTTOMLEFT"/>
-																			<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_DebuffsInner"/>
-																		</Anchors>
-																		<Scripts>
-																			<OnLoad>
-																				self.nameText = _G[self:GetName().."Name"]
-																				self.isDebuff = true
-																			</OnLoad>
-																		</Scripts>
-																	</Frame>
 																</Frames>
 															</Frame>
 															<ScrollFrame name="XPerl_Options_Profiles_HiddenDebuffs_DebuffsScrollBar" inherits="FauxScrollFrameTemplate" enableMouse="false" hidden="true">
@@ -12762,6 +12691,81 @@
 													</Frame>
 												</Frames>
 											</Frame>
+											<Frame name="XPerl_Options_Profiles_HiddenDebuffs_HintArea">
+												<Size><AbsDimension x="1" y="12"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_List" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="-2"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs">
+														<Offset><AbsDimension x="-2" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Layers>
+													<Layer level="ARTWORK">
+														<FontString inherits="GameFontDisableSmall" justifyH="LEFT" text="XPERL_CONF_HIDENDEBUFFS_HINT">
+															<Anchors>
+																<Anchor point="TOPLEFT"/>
+																<Anchor point="TOPRIGHT"/>
+															</Anchors>
+														</FontString>
+													</Layer>
+												</Layers>
+											</Frame>
+											<Button name="XPerl_Options_Profiles_HiddenDebuffs_AddBtn" inherits="XPerlButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPRIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_HintArea" relativePoint="BOTTOMRIGHT">
+														<Offset><AbsDimension x="-4" y="-2"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_ADD")
+													</OnLoad>
+													<OnClick>
+														XPerl_Options_HiddenDebuffs_AddManual(XPerl_Options_Profiles_HiddenDebuffs_AddEdit)
+													</OnClick>
+												</Scripts>
+											</Button>
+											<EditBox name="XPerl_Options_Profiles_HiddenDebuffs_AddEdit" autoFocus="false" letters="64" inherits="XPerlOptEditBox">
+												<Size><AbsDimension x="1" y="20"/></Size>
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_HintArea" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="6" y="-2"/></Offset>
+													</Anchor>
+													<Anchor point="RIGHT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_AddBtn" relativePoint="LEFT">
+														<Offset><AbsDimension x="-4" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+											</EditBox>
+											<CheckButton name="XPerl_Options_Profiles_HiddenDebuffs_AddBuff" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_AddEdit" relativePoint="BOTTOMLEFT">
+														<Offset><AbsDimension x="0" y="6"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_ADD_BUFF", true)
+														self.configIndex = "addBuff"
+														self.configClick = XPerl_Options_HiddenDebuffs_KindClick
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
+											<CheckButton name="XPerl_Options_Profiles_HiddenDebuffs_AddDebuff" inherits="XPerlCheckButtonTemplate">
+												<Anchors>
+													<Anchor point="TOPLEFT" relativeTo="XPerl_Options_Profiles_HiddenDebuffs_AddBuff" relativePoint="TOPLEFT">
+														<Offset><AbsDimension x="90" y="0"/></Offset>
+													</Anchor>
+												</Anchors>
+												<Scripts>
+													<OnLoad>
+														XPerl_OptionsSetMyText(self, "XPERL_CONF_HIDENDEBUFFS_ADD_DEBUFF", true)
+														self.configIndex = "addDebuff"
+														self.configClick = XPerl_Options_HiddenDebuffs_KindClick
+													</OnLoad>
+												</Scripts>
+											</CheckButton>
 										</Frames>
 									</Frame>
 								</Frames>
