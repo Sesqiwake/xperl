@@ -285,6 +285,20 @@ function XPerl_Profiles_Capture()
 		snapshot.party.smallRaid = XPerlDB.party.smallRaid
 	end
 
+	if (XPerl_Absorb_EnsureConfig) then
+		XPerl_Absorb_EnsureConfig(XPerlDB)
+	end
+	if (XPerlDB.absorb) then
+		snapshot.absorb = CopyTable(XPerlDB.absorb)
+	end
+
+	if (XPerl_HiddenDebuffs_EnsureConfig) then
+		XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
+	end
+	if (XPerlDB.hiddenDebuffs) then
+		snapshot.hiddenDebuffs = CopyTable(XPerlDB.hiddenDebuffs)
+	end
+
 	return snapshot
 end
 
@@ -429,6 +443,29 @@ local function DoApplyProfile(snapshot)
 		end
 		if (snapshot.party.smallRaid ~= nil) then
 			XPerlDB.party.smallRaid = snapshot.party.smallRaid
+		end
+	end
+
+	if (snapshot.absorb) then
+		XPerlDB.absorb = CopyTable(snapshot.absorb)
+		if (XPerl_Absorb_EnsureConfig) then
+			XPerl_Absorb_EnsureConfig(XPerlDB)
+		end
+		if (XPerl_Absorb_RefreshAll) then
+			XPerl_Absorb_RefreshAll()
+		end
+	end
+
+	if (snapshot.hiddenDebuffs) then
+		XPerlDB.hiddenDebuffs = CopyTable(snapshot.hiddenDebuffs)
+		if (XPerl_HiddenDebuffs_EnsureConfig) then
+			XPerl_HiddenDebuffs_EnsureConfig(XPerlDB)
+		end
+		if (XPerl_HiddenDebuffs_RefreshAll) then
+			XPerl_HiddenDebuffs_RefreshAll()
+		end
+		if (XPerl_Options_HiddenDebuffs_FillList) then
+			XPerl_Options_HiddenDebuffs_FillList()
 		end
 	end
 
