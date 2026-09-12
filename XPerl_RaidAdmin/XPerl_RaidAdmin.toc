@@ -1,5 +1,5 @@
 ﻿## Interface: 30300
-## Version: 3.2.0
+## Version: 3.2.1
 ## Title: X-Perl |cffeda55fRaid Admin|r by |cFFFF8080Zek|r
 ## Title-ruRU: X-Perl |cffeda55fРейд админ|r
 ## Title-zhCN: X-Perl |cffeda55f团队管理|r
