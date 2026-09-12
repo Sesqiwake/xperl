@@ -561,5 +561,10 @@ function XPerl_ValidateSettings()
 		XPerl_Absorb_EnsureConfig(conf)
 	end
 
+	-- Existing characters: keep previous always-on heal prediction until toggled off
+	if (conf.healPrediction == nil) then
+		conf.healPrediction = 1
+	end
+
 	XPerl_ValidateSettings = nil
 end
