@@ -34,19 +34,12 @@ function XPerl_Absorb_EnsureConfig(db)
 	if (not db) then
 		return XPerl_Absorb_Defaults()
 	end
+	-- Unchecked options store nil (GetChecked). Do not treat nil as "missing" for
+	-- enable/party/raid/healAbsorb.enable — that would restore defaults on tab change / login.
 	if (not db.absorb) then
 		db.absorb = XPerl_Absorb_Defaults()
 	else
 		local d = XPerl_Absorb_Defaults()
-		if (db.absorb.enable == nil) then
-			db.absorb.enable = d.enable
-		end
-		if (db.absorb.party == nil) then
-			db.absorb.party = d.party
-		end
-		if (db.absorb.raid == nil) then
-			db.absorb.raid = d.raid
-		end
 		if (not db.absorb.texture) then
 			db.absorb.texture = d.texture
 		end
