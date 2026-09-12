@@ -1,6 +1,6 @@
 # X-Perl UnitFrames — Sirus.su fork
 
-**Версия:** 3.2.1  
+**Версия:** 3.2.2  
 **Автор форка:** [Sesqiwake](https://github.com/)  
 **Оригинал:** Zek (X-Perl UnitFrames)  
 **Клиент:** World of Warcraft 3.3.5a (Interface `30300`), [Sirus.su](https://sirus.su)
@@ -18,6 +18,13 @@
 Команды: `/xperl` — настройки, `/xperl lock` — заблокировать фреймы.
 
 Обновление через [Sirus Launcher](https://sirus.su): в TOC указаны `X-Sirus-Update` и `X-Sirus-Category` (категория сторонних аддонов).
+
+---
+
+## Что нового в 3.2.2
+
+- **HealComm** — защита от UnitGUID(nil) на UNIT_AURA / delayed cast (ошибка Usage на Sirus).
+- **Предикт хила** — галка включения/выключения во вкладке «Custom Sirus» (блок снизу справа).
 
 ---
 
