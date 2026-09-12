@@ -35,6 +35,10 @@ XPERL_CONF_PROFILES_NOT_FOUND			= "Profile not found: %s"
 
 XPERL_CONF_SIRUS_RESERVED				= "Reserved"
 
+XPERL_CONF_HEALPREDICTION				= "Heal Prediction"
+XPERL_CONF_HEALPREDICTION_ENABLE		= "Enable"
+XPERL_CONF_HEALPREDICTION_DESC			= "Show incoming heals as an overlay on the health bar (LibHealComm)"
+
 XPERL_CONF_ABSORB						= "Absorbs"
 XPERL_CONF_ABSORB_ENABLE				= "Enable"
 XPERL_CONF_ABSORB_ENABLE_DESC			= "Show damage absorb on unit frames (Sirus API)"

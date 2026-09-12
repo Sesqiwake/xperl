@@ -36,6 +36,10 @@ XPERL_CONF_PROFILES_NOT_FOUND				= "Профиль не найден: %s"
 
 XPERL_CONF_SIRUS_RESERVED				= "Зарезервировано"
 
+XPERL_CONF_HEALPREDICTION				= "Предикт исцеления"
+XPERL_CONF_HEALPREDICTION_ENABLE		= "Включить"
+XPERL_CONF_HEALPREDICTION_DESC			= "Показывать входящий хил наложением на полосу здоровья (LibHealComm)"
+
 XPERL_CONF_ABSORB						= "Поглощения"
 XPERL_CONF_ABSORB_ENABLE				= "Включить"
 XPERL_CONF_ABSORB_ENABLE_DESC			= "Показывать поглощение урона на фреймах (API Sirus)"

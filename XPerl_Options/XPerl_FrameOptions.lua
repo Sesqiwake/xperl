@@ -2108,6 +2108,12 @@ function XPerl_Options_Absorb_OnChanged()
 	end
 end
 
+function XPerl_Options_HealPrediction_OnChanged()
+	if (XPerl_HealPrediction_RefreshAll) then
+		XPerl_HealPrediction_RefreshAll()
+	end
+end
+
 function XPerl_Options_Absorb_ModeClick(self)
 	local base = self.configBase
 	local idx = self.configIndex
@@ -2244,6 +2250,8 @@ local function XPerl_Global_ConfigDefault(default)
 	end
 
 	default.absorb = XPerl_Absorb_Defaults()
+
+	default.healPrediction = 1
 
 	default.rangeFinder = XPerl_DefaultRangeFinder()
 
