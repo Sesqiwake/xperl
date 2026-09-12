@@ -205,6 +205,39 @@ end
 
 local playerClass
 
+-- Sirus docs: CheckInteractDistance / UnitInRange return bool; classic often 1/nil.
+local function ResultInRange(v)
+	return v == true or v == 1
+end
+
+-- Yard proxies via IsItemInRange (same IDs DBM uses on this client). Prefer items over
+-- interact APIs: on Sirus those are bool and/or stuck, which broke old `range ~= 1` checks.
+local RANGE_YARD_ITEMS = {
+	[3] = 34368,	-- ~10m (Interact10 / duel index)
+	[1] = 18904,	-- ~35m ≈ Interact30
+	[5] = 32698,	-- ~48m ≈ Interact40 (UnitInRange fallback)
+}
+
+local function CacheRangeYardItems()
+	for _, itemId in pairs(RANGE_YARD_ITEMS) do
+		GetItemInfo(itemId)
+	end
+end
+
+local function FixedYardInRange(unit, interact)
+	local itemId = RANGE_YARD_ITEMS[interact]
+	if (itemId) then
+		local ir = IsItemInRange(itemId, unit)
+		if (ir ~= nil) then
+			return ResultInRange(ir)
+		end
+	end
+	if (interact == 5) then
+		return ResultInRange(UnitInRange(unit))
+	end
+	return ResultInRange(CheckInteractDistance(unit, interact))
+end
+
 -- We have a dummy do-nothing function here for classes that don't have range checking
 -- The do-something function is setup after variables_loaded and we work out spell to use just once
 function XPerl_UpdateSpellRange()
@@ -246,19 +279,16 @@ local function DoRangeCheck(unit, opt)
 
 	if (not range) then
 		if (opt.interact) then
-			if (opt.interact == 5) then
-				range = UnitInRange(unit)			-- 40 yards
-			else
-				range = CheckInteractDistance(unit, opt.interact)
-			end
 			-- 1 = Inspect = 30 yards
 			-- 2 = Trade = 11.11 yards
 			-- 3 = Duel = 10 yards
 			-- 4 = Follow = 28 yards
+			-- 5 = ~40 yards (party/raid UnitInRange; item fallback)
+			range = FixedYardInRange(unit, opt.interact) and 1 or 0
 		elseif (opt.spell) then
-			range = IsSpellInRange(opt.spell, unit)
+			range = ResultInRange(IsSpellInRange(opt.spell, unit)) and 1 or 0
 		elseif (opt.item) then
-			range = IsItemInRange(opt.item, unit)
+			range = ResultInRange(IsItemInRange(opt.item, unit)) and 1 or 0
 		else
 			range = 1
 		end
@@ -310,7 +340,7 @@ function XPerl_UpdateSpellRange2(self, overrideUnit, isRaidFrame)
 
 				if (rf.NameFrame.enabled) then
 					-- check for same item/spell. Saves doing the check multiple times
-					if (rf.Main.enabled and (rf.Main.spell == rf.NameFrame.spell) and (rf.Main.item == rf.NameFrame.item) and (rf.Main.PlusHealth == rf.NameFrame.PlusHealth)) then
+					if (rf.Main.enabled and (rf.Main.interact == rf.NameFrame.interact) and (rf.Main.spell == rf.NameFrame.spell) and (rf.Main.item == rf.NameFrame.item) and (rf.Main.PlusHealth == rf.NameFrame.PlusHealth)) then
 						if (mainA) then
 							nameA = rf.NameFrame.FadeAmount
 						end
@@ -324,7 +354,7 @@ function XPerl_UpdateSpellRange2(self, overrideUnit, isRaidFrame)
 				end
 				if (rf.StatsFrame.enabled) then
 					-- check for same item/spell. Saves doing the check multiple times
-					if (rf.Main.enabled and (rf.Main.spell == rf.StatsFrame.spell) and (rf.Main.item == rf.StatsFrame.item) and (rf.Main.PlusHealth == rf.StatsFrame.PlusHealth)) then
+					if (rf.Main.enabled and (rf.Main.interact == rf.StatsFrame.interact) and (rf.Main.spell == rf.StatsFrame.spell) and (rf.Main.item == rf.StatsFrame.item) and (rf.Main.PlusHealth == rf.StatsFrame.PlusHealth)) then
 						if (mainA) then
 							statsA = rf.StatsFrame.FadeAmount
 						end
@@ -386,6 +416,8 @@ function XPerl_StartupSpellRange()
 	if (b) then
 		XPerl_DefaultRangeSpells.ANY.item = b
 	end
+
+	CacheRangeYardItems()
 
 	local rf = conf.rangeFinder
 
